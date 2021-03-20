@@ -1,45 +1,43 @@
 package org.hyperagents.jade;
 
-import jade.util.Logger;
-import org.eclipse.jetty.server.Handler;
+import jade.core.ContainerID;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.HandlerList;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class HypermediaInterface {
-  private PlatformState state;
-  private Server server;
+  private final PlatformState state;
+  private final Server server;
 
   public HypermediaInterface(int port) {
     state = PlatformState.getInstance();
     server = new Server(port);
 
-    ContextHandler mainContainerContext = new ContextHandler("/");
+    HandlerList list = new HandlerList();
 
-    mainContainerContext.setHandler(new AbstractHandler() {
+    list.addHandler(new AbstractHandler() {
       @Override
       public void handle(String target, Request baseRequest, HttpServletRequest request,
-                         HttpServletResponse response) throws IOException, ServletException {
-        if (baseRequest.getMethod().equals("GET")) {
+                         HttpServletResponse response) throws IOException {
+        if (requestMatches(baseRequest, "GET","/")) {
+          baseRequest.setHandled(true);
           response.setStatus(HttpServletResponse.SC_OK);
           response.setContentType("text/html");
           response.getWriter().println("Containers: " + state.getNumberOfContainers());
-        }
 
-        baseRequest.setHandled(true);
+          for (ContainerID cid : state.getContainerIDs()) {
+            response.getWriter().println(cid);
+          }
+        }
       }
     });
 
-    ContextHandlerCollection contexts = new ContextHandlerCollection();
-    contexts.setHandlers(new Handler[] { mainContainerContext });
-    server.setHandler(contexts);
+    server.setHandler(list);
   }
 
   public void start() throws Exception {
@@ -48,5 +46,10 @@ public class HypermediaInterface {
 
   public void stop() throws Exception {
     server.stop();
+  }
+
+  private boolean requestMatches(Request request, String method, String requestURI) {
+    return request.getMethod().equalsIgnoreCase(method) &&
+        request.getRequestURI().equalsIgnoreCase(requestURI);
   }
 }

@@ -1,0 +1,1 @@
+java -cp org_hyperagents_jade_HypermediaAgentSystem/src/main/resources/jade-4.5.0.jar jade.Boot -gui -jade_core_management_AgentManagementService_agentspath org_hyperagents_jade_HypermediaAgentSystem/build/libs/ has:org.hyperagents.jade.HypermediaAgentSystem

@@ -33,4 +33,8 @@ public class PlatformState {
     return containers.remove(containerID);
   }
 
+  public List<ContainerID> getContainerIDs() {
+    return containers;
+  }
+
 }
