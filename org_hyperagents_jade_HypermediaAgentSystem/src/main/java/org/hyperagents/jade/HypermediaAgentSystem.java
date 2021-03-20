@@ -1,10 +1,8 @@
 package org.hyperagents.jade;
 
 import jade.core.ContainerID;
-import jade.domain.introspection.AMSSubscriber;
-import jade.domain.introspection.AddedContainer;
-import jade.domain.introspection.IntrospectionVocabulary;
-import jade.domain.introspection.RemovedContainer;
+import jade.domain.FIPAAgentManagement.APDescription;
+import jade.domain.introspection.*;
 import jade.tools.ToolAgent;
 import jade.util.Logger;
 
@@ -66,6 +64,14 @@ public class HypermediaAgentSystem extends ToolAgent {
 
         logger.log(Logger.INFO, "Container removed: " + cid.getName() + " " + cid.getAddress());
         logger.log(Logger.INFO, "Total containers: " + state.getNumberOfContainers());
+      });
+
+      handlersTable.put(IntrospectionVocabulary.PLATFORMDESCRIPTION, (EventHandler) ev -> {
+        PlatformDescription pd = (PlatformDescription) ev;
+        APDescription apDesc = pd.getPlatform();
+        state.setPlatformDescription(apDesc);
+
+        logger.log(Logger.INFO, "Platform name: " + apDesc.getName());
       });
     }
   }

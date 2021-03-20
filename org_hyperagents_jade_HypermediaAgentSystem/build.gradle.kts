@@ -6,8 +6,6 @@
  * User Manual available at https://docs.gradle.org/6.8.3/userguide/building_java_projects.html
  */
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
   // Apply the java-library plugin for API and implementation separation.
   `java-library`
@@ -27,15 +25,27 @@ dependencies {
   // api("org.apache.commons:commons-math3:3.6.1")
 
   // These dependencies are used internally, and not exposed to consumers on their own compile classpath.
-  implementation("org.eclipse.jetty.aggregate:jetty-all:9.0.0.RC2")
   implementation(files("src/main/resources/jade-4.5.0.jar"))
+  implementation("org.eclipse.jetty.aggregate:jetty-all:9.0.0.RC2")
+  implementation("org.eclipse.rdf4j:rdf4j-runtime:3.6.1")
 }
 
 tasks {
-  withType<ShadowJar> {
+  shadowJar {
+    archiveBaseName.set("org_hyperagents_jade_HypermediaAgentSystem")
     archiveClassifier.set("")
-    manifest {
-      attributes(mapOf("Implementation-Title" to "org_hyperagents_jade_HypermediaAgentSystem"))
-    }
+    archiveVersion.set("")
+
+    mergeServiceFiles()
+  }
+
+  task<JavaExec>("run") {
+    main = "jade.Boot"
+
+    args = listOf("-gui", "-jade_core_management_AgentManagementService_agentspath",
+      "org_hyperagents_jade_HypermediaAgentSystem/build/libs/",
+      "has:org.hyperagents.jade.HypermediaAgentSystem")
+
+    classpath = sourceSets["main"].runtimeClasspath
   }
 }
