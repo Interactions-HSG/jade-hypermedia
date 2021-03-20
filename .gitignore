@@ -6,3 +6,7 @@ build
 
 # Ignore edior directions
 .idea
+
+# Ignore JADE generated files
+APDescription.txt
+MTPs-Main-Container.txt

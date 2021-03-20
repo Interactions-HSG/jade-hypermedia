@@ -8,4 +8,4 @@
  */
 
 rootProject.name = "jade-hypermedia"
-include("lib")
+include("org_hyperagents_jade_HypermediaAgentSystem")

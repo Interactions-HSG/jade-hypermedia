@@ -6,9 +6,12 @@
  * User Manual available at https://docs.gradle.org/6.8.3/userguide/building_java_projects.html
  */
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
   // Apply the java-library plugin for API and implementation separation.
   `java-library`
+  id("com.github.johnrengelman.shadow") version "5.1.0"
 }
 
 repositories {
@@ -18,12 +21,21 @@ repositories {
 
 dependencies {
   // Use JUnit test framework.
-  testImplementation("junit:junit:4.13")
+  // testImplementation("junit:junit:4.13")
 
   // This dependency is exported to consumers, that is to say found on their compile classpath.
-  api("org.apache.commons:commons-math3:3.6.1")
+  // api("org.apache.commons:commons-math3:3.6.1")
 
   // These dependencies are used internally, and not exposed to consumers on their own compile classpath.
-  implementation("com.google.guava:guava:29.0-jre")
+  implementation("org.eclipse.jetty.aggregate:jetty-all:9.0.0.RC2")
   implementation(files("src/main/resources/jade-4.5.0.jar"))
+}
+
+tasks {
+  withType<ShadowJar> {
+    archiveClassifier.set("")
+    manifest {
+      attributes(mapOf("Implementation-Title" to "org_hyperagents_jade_HypermediaAgentSystem"))
+    }
+  }
 }
