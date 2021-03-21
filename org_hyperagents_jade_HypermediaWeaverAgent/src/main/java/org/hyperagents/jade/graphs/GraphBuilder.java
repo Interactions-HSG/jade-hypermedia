@@ -39,6 +39,10 @@ public class GraphBuilder {
     return getBaseIRI();
   }
 
+  public String getEntityIRI() {
+    return getBaseIRI();
+  }
+
   public String write(RDFFormat format) {
     OutputStream out = new ByteArrayOutputStream();
 

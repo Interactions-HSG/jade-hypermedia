@@ -36,6 +36,11 @@ public class AgentGraphBuilder extends GraphBuilder {
     return builder.getSubjectIRI() + "agents/" + agentID.getLocalName();
   }
 
+  @Override
+  public String getEntityIRI() {
+    return agentIRI.stringValue();
+  }
+
   public AgentGraphBuilder addMetadata() {
     graphBuilder.add(agentIRI, rdf.createIRI(FIPA.name), agentID.getName());
     graphBuilder.add(agentIRI, rdf.createIRI(JADE.localName), agentID.getLocalName());

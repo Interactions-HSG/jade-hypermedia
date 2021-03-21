@@ -35,7 +35,7 @@ public class ContainerGraphBuilder extends GraphBuilder {
   public ContainerGraphBuilder addAgents(Set<AID> agentIDs) {
     for (AID aid : agentIDs) {
       AgentGraphBuilder agentGraph = new AgentGraphBuilder(containerID, aid, httpPort);
-      graphBuilder.add(getSubjectIRI(), JADE.containsAgent, rdf.createIRI(agentGraph.getSubjectIRI()));
+      graphBuilder.add(getSubjectIRI(), JADE.containsAgent, rdf.createIRI(agentGraph.getEntityIRI()));
     }
 
     return this;
