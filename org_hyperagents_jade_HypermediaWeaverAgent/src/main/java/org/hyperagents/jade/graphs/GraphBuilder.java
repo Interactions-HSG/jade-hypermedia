@@ -10,6 +10,7 @@ import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.hyperagents.jade.HypermediaInterface;
+import org.hyperagents.jade.vocabs.FIPA;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.io.ByteArrayOutputStream;
@@ -41,6 +42,7 @@ public class GraphBuilder {
     OutputStream out = new ByteArrayOutputStream();
 
     graphBuilder.setNamespace("jade", JADE.PREFIX);
+    graphBuilder.setNamespace("fipa", FIPA.PREFIX);
 
     try (out) {
       Rio.write(graphBuilder.build(), out, format,

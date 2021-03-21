@@ -38,12 +38,12 @@ public class PlatformState {
     return platformDescription.getName();
   }
 
-  public Optional<ContainerID> getContainerID(String containerName) {
-    return containerIDs.stream().filter(cid -> cid.getName().equals(containerName)).findAny();
-  }
-
   public int getNumberOfContainers() {
     return containerIDs.size();
+  }
+
+  public Optional<ContainerID> getContainerIDByName(String containerName) {
+    return containerIDs.stream().filter(cid -> cid.getName().equals(containerName)).findAny();
   }
 
   public void addContainerID(ContainerID containerID) {
@@ -54,7 +54,7 @@ public class PlatformState {
     return containerIDs.remove(containerID);
   }
 
-  public Set<ContainerID> getContainerIDsImmutable() {
+  public Set<ContainerID> getContainerIDs() {
     return Collections.unmodifiableSet(containerIDs);
   }
 
@@ -85,5 +85,14 @@ public class PlatformState {
       return Collections.unmodifiableSet(containedAgents.get(containerID));
     }
     return new HashSet<>();
+  }
+
+  public Optional<AID> getAgentIDByName(ContainerID containerID, String agentName) {
+    Set<AID> agentIDs = containedAgents.get(containerID);
+    if (agentIDs == null) {
+      return Optional.empty();
+    }
+
+    return agentIDs.stream().filter(aid -> aid.getLocalName().equals(agentName)).findAny();
   }
 }

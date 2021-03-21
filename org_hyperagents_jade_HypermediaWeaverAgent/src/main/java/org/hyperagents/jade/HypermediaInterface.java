@@ -1,5 +1,6 @@
 package org.hyperagents.jade;
 
+import jade.core.AID;
 import jade.core.ContainerID;
 import jade.util.Logger;
 import jade.util.leap.Properties;
@@ -8,6 +9,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.hyperagents.jade.graphs.AgentGraphBuilder;
 import org.hyperagents.jade.graphs.ContainerGraphBuilder;
 import org.hyperagents.jade.graphs.PlatformGraphBuilder;
 
@@ -52,17 +54,20 @@ public class HypermediaInterface {
 
     HandlerList list = new HandlerList();
 
+    // TODO: refactor list handlers
+
     list.addHandler(new AbstractHandler() {
       @Override
       public void handle(String target, Request baseRequest, HttpServletRequest request,
                          HttpServletResponse response) throws IOException {
-        if (requestMatches(baseRequest, "GET","/")) {
+        if (baseRequest.getMethod().matches("GET")
+            && baseRequest.getRequestURI().matches("/")) {
           baseRequest.setHandled(true);
 
           PlatformGraphBuilder builder = new PlatformGraphBuilder(httpHost, httpPort);
 
           String responseBody = builder.addMetadata()
-              .addContainers(state.getContainerIDsImmutable())
+              .addContainers(state.getContainerIDs())
               .write(RDFFormat.TURTLE);
 
           response.setStatus(HttpServletResponse.SC_OK);
@@ -77,12 +82,13 @@ public class HypermediaInterface {
       public void handle(String target, Request baseRequest, HttpServletRequest request,
                          HttpServletResponse response) throws IOException {
         String path = baseRequest.getRequestURI();
-        if (path.matches("/containers/[^/]*(/$)?")) {
+        if (baseRequest.getMethod().matches("GET")
+            && path.matches("/containers/[^/]*(/$)?")) {
           baseRequest.setHandled(true);
 
-          String containerName = getLastPathParam(path, "/containers/");
-
-          Optional<ContainerID> containerID = state.getContainerID(containerName);
+          String[] elements = path.split("/");
+          String containerName = elements[2];
+          Optional<ContainerID> containerID = state.getContainerIDByName(containerName);
 
           if (containerID.isPresent()) {
             ContainerGraphBuilder builder = new ContainerGraphBuilder(containerID.get(), httpPort);
@@ -101,16 +107,52 @@ public class HypermediaInterface {
       }
     });
 
+    list.addHandler(new AbstractHandler() {
+      @Override
+      public void handle(String target, Request baseRequest, HttpServletRequest request,
+                         HttpServletResponse response) throws IOException {
+        String path = baseRequest.getRequestURI();
+        if (baseRequest.getMethod().matches("GET")
+            && path.matches("/containers/[^/]*/agents/[^/]*(/$)?")) {
+          baseRequest.setHandled(true);
+
+          String[] elements = path.split("/");
+          String containerName = elements[2];
+          String agentName = elements[4];
+
+          LOGGER.log(Logger.INFO, "Request for agent " + agentName + " in container "
+              + containerName);
+
+          Optional<ContainerID> containerID = state.getContainerIDByName(containerName);
+
+          if (containerID.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            LOGGER.log(Logger.INFO, "Not able to retrieve description of " + agentName + " in "
+              + containerName + ": container does not exist");
+          } else {
+            Optional<AID> agentID = state.getAgentIDByName(containerID.get(), agentName);
+
+            if (agentID.isEmpty()) {
+              response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+              LOGGER.log(Logger.INFO, "Not able to retrieve description of " + agentName + " in "
+                + containerName + ": agent does not exist");
+            } else {
+              AgentGraphBuilder builder = new AgentGraphBuilder(containerID.get(), agentID.get(),
+                  httpPort);
+
+              String responseBody = builder.addMetadata()
+                  .addAddresses()
+                  .write(RDFFormat.TURTLE);
+
+              response.setStatus(HttpServletResponse.SC_OK);
+              response.setContentType("text/turtle");
+              response.getWriter().print(responseBody);
+            }
+          }
+        }
+      }
+    });
+
     return list;
-  }
-
-  private boolean requestMatches(Request request, String method, String requestURI) {
-    return request.getMethod().equalsIgnoreCase(method) &&
-        request.getRequestURI().equalsIgnoreCase(requestURI);
-  }
-
-  private String getLastPathParam(String path, String prefix) {
-    String param = path.substring(prefix.length());
-    return param.endsWith("/") ? param.substring(0, param.length()-1) : param;
   }
 }

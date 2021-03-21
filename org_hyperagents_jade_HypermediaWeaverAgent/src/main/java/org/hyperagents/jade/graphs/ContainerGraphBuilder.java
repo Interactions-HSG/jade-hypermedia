@@ -3,7 +3,6 @@ package org.hyperagents.jade.graphs;
 import jade.core.AID;
 import jade.core.ContainerID;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.hyperagents.jade.PlatformState;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.util.Set;
