@@ -34,8 +34,8 @@ public class PlatformState {
     this.platformDescription = platformDescription;
   }
 
-  public String getPlatformName() {
-    return platformDescription.getName();
+  public APDescription getAPDescription() {
+    return platformDescription;
   }
 
   public int getNumberOfContainers() {

@@ -22,15 +22,12 @@ public class AgentGraphBuilder extends GraphBuilder {
     this.agentID = agentID;
     this.containerID = containerID;
 
-    agentIRI = rdf.createIRI(getAgentIRI());
-
     graphBuilder.add(getSubjectIRI(), RDF.TYPE, rdf.createIRI(FIPA.AgentIdentifier));
-    graphBuilder.add(FIPA.AgentIdentifier, FIPA.identifierOf, agentIRI);
+    agentIRI = addNonInformationResource(FIPA.identifierOf, "#agent");
     graphBuilder.add(agentIRI, RDF.TYPE, rdf.createIRI(FIPA.Agent));
-    graphBuilder.add(agentIRI, RDF.TYPE, rdf.createIRI(STNCore.Agent));
 
-    // Agent-Identifier has name (word, mandatory), addresses, resolvers (optional)
-//    "fipa.mts.mtp.http.std"
+    graphBuilder.setNamespace("stn-core", STNCore.PREFIX);
+    graphBuilder.add(agentIRI, RDF.TYPE, rdf.createIRI(STNCore.Agent));
   }
 
   @Override
@@ -46,10 +43,12 @@ public class AgentGraphBuilder extends GraphBuilder {
     return this;
   }
 
+  @SuppressWarnings("unchecked")
   public AgentGraphBuilder addAddresses() {
     return addOrderedList(FIPA.addresses, agentID.getAllAddresses());
   }
 
+  @SuppressWarnings("unchecked")
   public AgentGraphBuilder addResolvers() {
     return addOrderedList(FIPA.resolvers, agentID.getAllResolvers());
   }
@@ -77,9 +76,5 @@ public class AgentGraphBuilder extends GraphBuilder {
     } else {
       graphBuilder.add(subject, RDF.REST, RDF.NIL);
     }
-  }
-
-  private String getAgentIRI() {
-    return getSubjectIRI() + "#agent";
   }
 }

@@ -14,13 +14,13 @@ public class FIPA {
   // The following terms are defined in: http://fipa.org/specs/fipa00023/SC00023K.html#_Toc75951010
   public static final String addresses = PREFIX + "addresses";
   public static final String resolvers = PREFIX + "resolvers";
+  public static final String apService = PREFIX + "apService";
   // Non-standard terms:
+  public static final String address = PREFIX + "address";
   public static final String identifierOf = PREFIX + "identifierOf";
-
-//  public static final String usesMessageTransport = PREFIX + "usesMessageTransport";
-//  public static final String hasType = PREFIX + "hasTransportType";
-//  public static final String hasAddress = PREFIX + "hasTransportAddress";
+  public static final String descriptionOf = PREFIX + "descriptionOf";
 
   /* Data properties */
   public static final String name = PREFIX + "name";
+  public static final String type = PREFIX + "type";
 }

@@ -64,9 +64,11 @@ public class HypermediaInterface {
             && baseRequest.getRequestURI().matches("/")) {
           baseRequest.setHandled(true);
 
-          PlatformGraphBuilder builder = new PlatformGraphBuilder(httpHost, httpPort);
+          PlatformGraphBuilder builder = new PlatformGraphBuilder(state.getAPDescription(),
+              httpHost, httpPort);
 
           String responseBody = builder.addMetadata()
+              .addAPServices()
               .addContainers(state.getContainerIDs())
               .write(RDFFormat.TURTLE);
 

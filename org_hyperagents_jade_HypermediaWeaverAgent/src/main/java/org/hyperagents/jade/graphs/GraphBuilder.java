@@ -1,6 +1,7 @@
 package org.hyperagents.jade.graphs;
 
 import jade.util.Logger;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
@@ -12,14 +13,13 @@ import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.hyperagents.jade.HypermediaInterface;
 import org.hyperagents.jade.vocabs.FIPA;
 import org.hyperagents.jade.vocabs.JADE;
-import org.hyperagents.jade.vocabs.STNCore;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 public class GraphBuilder {
-  private final static Logger LOGGER = Logger.getJADELogger(HypermediaInterface.class.getName());
+  protected final static Logger LOGGER = Logger.getJADELogger(HypermediaInterface.class.getName());
 
   protected final ValueFactory rdf;
   protected final ModelBuilder graphBuilder;
@@ -44,7 +44,6 @@ public class GraphBuilder {
 
     graphBuilder.setNamespace("jade", JADE.PREFIX);
     graphBuilder.setNamespace("fipa", FIPA.PREFIX);
-    graphBuilder.setNamespace("stn-core", STNCore.PREFIX);
 
     try (out) {
       Rio.write(graphBuilder.build(), out, format,
@@ -58,5 +57,11 @@ public class GraphBuilder {
 
   protected String getBaseIRI() {
     return "http://" + localAddress + ":" + httpPort + "/";
+  }
+
+  protected IRI addNonInformationResource(String property, String fragment) {
+    IRI entityIRI = rdf.createIRI(getSubjectIRI() + fragment);
+    graphBuilder.add(getSubjectIRI(), property, entityIRI);
+    return entityIRI;
   }
 }
