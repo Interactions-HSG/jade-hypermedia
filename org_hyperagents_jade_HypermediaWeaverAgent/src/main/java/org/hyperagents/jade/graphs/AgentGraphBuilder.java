@@ -4,10 +4,13 @@ import jade.core.AID;
 import jade.core.ContainerID;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.hyperagents.jade.vocabs.FIPA;
 import org.hyperagents.jade.vocabs.JADE;
 import org.hyperagents.jade.vocabs.STNCore;
+
+import java.util.Iterator;
 
 public class AgentGraphBuilder extends GraphBuilder {
   private final AID agentID;
@@ -44,27 +47,36 @@ public class AgentGraphBuilder extends GraphBuilder {
   }
 
   public AgentGraphBuilder addAddresses() {
-    if (agentID.getAddressesArray().length == 0) {
-      return this;
+    return addOrderedList(FIPA.addresses, agentID.getAllAddresses());
+  }
+
+  public AgentGraphBuilder addResolvers() {
+    return addOrderedList(FIPA.resolvers, agentID.getAllResolvers());
+  }
+
+  private AgentGraphBuilder addOrderedList(String property, Iterator<String> list) {
+    if (list.hasNext()) {
+      BNode listNode = rdf.createBNode();
+      graphBuilder.add(agentIRI, rdf.createIRI(property), listNode);
+
+      String head = list.next();
+      addStringArrayAsList(listNode, head, list);
     }
-
-    BNode addressList = rdf.createBNode();
-    graphBuilder.add(agentIRI, rdf.createIRI(FIPA.addresses), addressList);
-    graphBuilder.add(addressList, RDF.TYPE, RDF.LIST);
-
-    // TODO this should be recursive
-    for (String address : agentID.getAddressesArray()) {
-      graphBuilder.add(addressList, RDF.FIRST, address);
-    }
-
-    graphBuilder.add(addressList, RDF.REST, RDF.NIL);
 
     return this;
   }
 
-  public AgentGraphBuilder addResolvers() {
-    // TODO
-    return this;
+  private void addStringArrayAsList(Resource subject, String head, Iterator<String> tail) {
+    graphBuilder.add(subject, RDF.TYPE, RDF.LIST);
+    graphBuilder.add(subject, RDF.FIRST, head);
+
+    if (tail.hasNext()) {
+      BNode rest = rdf.createBNode();
+      graphBuilder.add(subject, RDF.REST, rest);
+      addStringArrayAsList(rest, tail.next(), tail);
+    } else {
+      graphBuilder.add(subject, RDF.REST, RDF.NIL);
+    }
   }
 
   private String getAgentIRI() {

@@ -142,6 +142,7 @@ public class HypermediaInterface {
 
               String responseBody = builder.addMetadata()
                   .addAddresses()
+                  .addResolvers()
                   .write(RDFFormat.TURTLE);
 
               response.setStatus(HttpServletResponse.SC_OK);

@@ -12,6 +12,7 @@ import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.hyperagents.jade.HypermediaInterface;
 import org.hyperagents.jade.vocabs.FIPA;
 import org.hyperagents.jade.vocabs.JADE;
+import org.hyperagents.jade.vocabs.STNCore;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class GraphBuilder {
 
     graphBuilder.setNamespace("jade", JADE.PREFIX);
     graphBuilder.setNamespace("fipa", FIPA.PREFIX);
+    graphBuilder.setNamespace("stn-core", STNCore.PREFIX);
 
     try (out) {
       Rio.write(graphBuilder.build(), out, format,
