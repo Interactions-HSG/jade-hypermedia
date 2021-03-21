@@ -10,7 +10,7 @@ messages. Agents live in containers, which can be distributed across the Interne
 of the JADE platform, there is one *main container* that all other containers connect to. The main
 container can be replicated for fault tolerance.
 
-![Image](https://jade.tilab.com/doc/tutorials/images/jadeArchitecture.png)
+![JADE Architecture Overview](hwa-lib/src/main/resources/jade-architecture.png)
 
 Image source: [Tutorial 1: JADE Architecture Overview](https://jade.tilab.com/documentation/tutorials-guides/jade-administration-tutorial/architecture-overview/)
 
@@ -19,11 +19,14 @@ authority in the system, and one *Directory Facilitator (DF)*, which provides a 
 provided by agents on the platform. The AMS and DF are defined by the [FIPA Agent Management
 Specification](http://fipa.org/specs/fipa00023/SC00023K.html).
 
+See [JADE Tutorials and Guides](https://jade.tilab.com/documentation/tutorials-guides/) for more
+information on JADE.
+
 ## About this project
 
 This project implements a *Hypermedia Weaver Agent (HWA)*, a special type of JADE agent that helps
-construct a hypermedia interface for a distributed JADE platform. There can be multiple HWAs in a
-distributed deployment, but at most one HWA per machine that manages all containers deployed on that
+construct a hypermedia interface for a distributed JADE platform. In a distributed deployment, there
+must be one HWA per machine to manage the hypermedia interface for all containers deployed on that
 machine.
 
 ## How to run the project
