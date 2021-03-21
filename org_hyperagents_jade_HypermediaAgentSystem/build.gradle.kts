@@ -42,7 +42,8 @@ tasks {
   task<JavaExec>("run") {
     main = "jade.Boot"
 
-    args = listOf("-gui", "-jade_core_management_AgentManagementService_agentspath",
+    args = listOf("-gui", "-http-host", "192.168.100.5", "-http-port", "3000",
+      "-jade_core_management_AgentManagementService_agentspath",
       "org_hyperagents_jade_HypermediaAgentSystem/build/libs/",
       "has:org.hyperagents.jade.HypermediaAgentSystem")
 

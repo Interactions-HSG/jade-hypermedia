@@ -3,9 +3,7 @@ package org.hyperagents.jade;
 import jade.core.ContainerID;
 import jade.domain.FIPAAgentManagement.APDescription;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class PlatformState {
   private static PlatformState platform;
@@ -32,6 +30,10 @@ public class PlatformState {
 
   public String getPlatformName() {
     return platformDescription.getName();
+  }
+
+  public Optional<ContainerID> getContainerID(String containerName) {
+    return containerIDs.stream().filter(cid -> cid.getName().equals(containerName)).findAny();
   }
 
   public int getNumberOfContainers() {

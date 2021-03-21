@@ -15,7 +15,8 @@ public class HypermediaAgentSystem extends ToolAgent {
   protected void toolSetup() {
     logger = Logger.getMyLogger(getName());
 
-    server = new HypermediaInterface(3000);
+    // Create hypermedia server with boot config
+    server = new HypermediaInterface(getBootProperties());
 
     try {
       server.start();
@@ -41,7 +42,7 @@ public class HypermediaAgentSystem extends ToolAgent {
 
   class ListenerBehaviour extends AMSSubscriber {
     private final PlatformState state = PlatformState.getInstance();
-
+    
     @SuppressWarnings({ "unchecked" })
     @Override
     protected void installHandlers(Map handlersTable) {
@@ -60,9 +61,13 @@ public class HypermediaAgentSystem extends ToolAgent {
         RemovedContainer rc = (RemovedContainer)ev;
         ContainerID cid = rc.getContainer();
 
-        state.removeContainerID(cid);
+        if (!state.removeContainerID(cid)) {
+          logger.log(Logger.INFO, "Cannot remove container, container not found: "
+              + cid.getName() + " " + cid.getAddress());
+        } else {
+          logger.log(Logger.INFO, "Container removed: " + cid.getName() + " " + cid.getAddress());
+        }
 
-        logger.log(Logger.INFO, "Container removed: " + cid.getName() + " " + cid.getAddress());
         logger.log(Logger.INFO, "Total containers: " + state.getNumberOfContainers());
       });
 
