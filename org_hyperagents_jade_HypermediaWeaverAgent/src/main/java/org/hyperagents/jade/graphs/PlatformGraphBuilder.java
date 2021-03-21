@@ -12,7 +12,6 @@ import org.hyperagents.jade.vocabs.JADE;
 
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Logger;
 
 public class PlatformGraphBuilder extends GraphBuilder {
   private final IRI platformIRI;

@@ -19,6 +19,7 @@ public class FIPA {
   public static final String address = PREFIX + "address";
   public static final String identifierOf = PREFIX + "identifierOf";
   public static final String descriptionOf = PREFIX + "descriptionOf";
+  public static final String hostedBy = PREFIX + "hostedBy";
 
   /* Data properties */
   public static final String name = PREFIX + "name";

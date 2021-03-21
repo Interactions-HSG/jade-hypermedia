@@ -2,10 +2,12 @@ package org.hyperagents.jade.graphs;
 
 import jade.core.AID;
 import jade.core.ContainerID;
+import jade.domain.FIPAAgentManagement.APDescription;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.hyperagents.jade.PlatformState;
 import org.hyperagents.jade.vocabs.FIPA;
 import org.hyperagents.jade.vocabs.JADE;
 import org.hyperagents.jade.vocabs.STNCore;
@@ -17,7 +19,8 @@ public class AgentGraphBuilder extends GraphBuilder {
   private final ContainerID containerID;
   private final IRI agentIRI;
 
-  public AgentGraphBuilder(ContainerID containerID, AID agentID, int httpPort) {
+  public AgentGraphBuilder(ContainerID containerID, AID agentID,
+                           int httpPort) {
     super(containerID.getAddress(), httpPort);
     this.agentID = agentID;
     this.containerID = containerID;
@@ -25,9 +28,14 @@ public class AgentGraphBuilder extends GraphBuilder {
     graphBuilder.add(getSubjectIRI(), RDF.TYPE, rdf.createIRI(FIPA.AgentIdentifier));
     agentIRI = addNonInformationResource(FIPA.identifierOf, "#agent");
     graphBuilder.add(agentIRI, RDF.TYPE, rdf.createIRI(FIPA.Agent));
+    graphBuilder.add(agentIRI, RDF.TYPE, rdf.createIRI(STNCore.Agent));
+
+    APDescription apDesc = PlatformState.getInstance().getAPDescription();
+    String platformIRI = new PlatformGraphBuilder(apDesc, containerID.getAddress(), httpPort)
+        .getEntityIRI();
+    graphBuilder.add(agentIRI, rdf.createIRI(FIPA.hostedBy), rdf.createIRI(platformIRI));
 
     graphBuilder.setNamespace("stn-core", STNCore.PREFIX);
-    graphBuilder.add(agentIRI, RDF.TYPE, rdf.createIRI(STNCore.Agent));
   }
 
   @Override
