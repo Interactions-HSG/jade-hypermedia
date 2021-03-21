@@ -1,4 +1,4 @@
-package org.hyperagents.jade;
+package org.hyperagents.jade.vocabs;
 
 public final class JADE {
   public static final String PREFIX = "http://hyperagents.org/ns/jade#";

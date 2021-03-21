@@ -32,7 +32,7 @@ dependencies {
 
 tasks {
   shadowJar {
-    archiveBaseName.set("org_hyperagents_jade_HypermediaAgentSystem")
+    archiveBaseName.set("org_hyperagents_jade_HypermediaWeaverAgent")
     archiveClassifier.set("")
     archiveVersion.set("")
 
@@ -44,8 +44,8 @@ tasks {
 
     args = listOf("-gui", "-http-host", "192.168.100.5", "-http-port", "3000",
       "-jade_core_management_AgentManagementService_agentspath",
-      "org_hyperagents_jade_HypermediaAgentSystem/build/libs/",
-      "has:org.hyperagents.jade.HypermediaAgentSystem")
+      "org_hyperagents_jade_HypermediaWeaverAgent/build/libs/",
+      "hwa:org.hyperagents.jade.HypermediaWeaverAgent")
 
     classpath = sourceSets["main"].runtimeClasspath
   }

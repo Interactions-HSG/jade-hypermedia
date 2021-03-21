@@ -1,14 +1,16 @@
-package org.hyperagents.jade;
+package org.hyperagents.jade.graphs;
 
 import jade.core.ContainerID;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.hyperagents.jade.PlatformState;
+import org.hyperagents.jade.vocabs.JADE;
 
-import java.util.List;
+import java.util.Set;
 
 public class PlatformGraphBuilder extends GraphBuilder {
 
   public PlatformGraphBuilder(String address, int httpPort) {
-    super(address, httpPort, "/");
+    super(address, httpPort);
 
     graphBuilder.add(getSubjectIRI(), RDF.TYPE, rdf.createIRI(JADE.Platform));
   }
@@ -18,7 +20,7 @@ public class PlatformGraphBuilder extends GraphBuilder {
     return this;
   }
 
-  public PlatformGraphBuilder addContainers(List<ContainerID> containerIDs) {
+  public PlatformGraphBuilder addContainers(Set<ContainerID> containerIDs) {
     // Add containment triples from main-container to all containers
     for (ContainerID cid : containerIDs) {
       if (cid.getMain()) {

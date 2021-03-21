@@ -1,4 +1,4 @@
-package org.hyperagents.jade;
+package org.hyperagents.jade.graphs;
 
 import jade.util.Logger;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -9,6 +9,8 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
+import org.hyperagents.jade.HypermediaInterface;
+import org.hyperagents.jade.vocabs.JADE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,19 +24,17 @@ public class GraphBuilder {
 
   protected final String localAddress;
   protected final int httpPort;
-  protected final String relativePath;
 
-  public GraphBuilder(String localAddress, int httpPort, String relativePath) {
+  public GraphBuilder(String localAddress, int httpPort) {
     rdf = SimpleValueFactory.getInstance();
     graphBuilder = new ModelBuilder();
 
     this.localAddress = localAddress;
     this.httpPort = httpPort;
-    this.relativePath = relativePath;
   }
 
   public String getSubjectIRI() {
-    return constructRelativeIRI();
+    return getBaseIRI();
   }
 
   public String write(RDFFormat format) {
@@ -52,7 +52,7 @@ public class GraphBuilder {
     return out.toString();
   }
 
-  protected String constructRelativeIRI() {
-    return "http://" + localAddress + ":" + httpPort + relativePath;
+  protected String getBaseIRI() {
+    return "http://" + localAddress + ":" + httpPort + "/";
   }
 }

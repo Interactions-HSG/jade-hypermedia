@@ -8,6 +8,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.hyperagents.jade.graphs.ContainerGraphBuilder;
+import org.hyperagents.jade.graphs.PlatformGraphBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -85,7 +87,8 @@ public class HypermediaInterface {
           if (containerID.isPresent()) {
             ContainerGraphBuilder builder = new ContainerGraphBuilder(containerID.get(), httpPort);
 
-            String responseBody = builder.write(RDFFormat.TURTLE);
+            String responseBody = builder.addAgents(state.getAgentsInContainer(containerID.get()))
+              .write(RDFFormat.TURTLE);
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("text/turtle");
