@@ -42,11 +42,17 @@ tasks {
   task<JavaExec>("run") {
     main = "jade.Boot"
 
-    args = listOf("-gui", "-http-host", "192.168.100.5", "-http-port", "3000",
+    args = listOf("-gui", "-http-host", "localhost", "-http-port", "3000",
       "-jade_core_management_AgentManagementService_agentspath",
       "org_hyperagents_jade_HypermediaWeaverAgent/build/libs/",
       "hwa:org.hyperagents.jade.HypermediaWeaverAgent")
 
     classpath = sourceSets["main"].runtimeClasspath
+  }
+
+  task<JavaExec>("startContainer") {
+    main = "jade.Boot"
+    args = listOf("-container")
+    classpath = files("src/main/resources/jade-4.5.0.jar")
   }
 }
