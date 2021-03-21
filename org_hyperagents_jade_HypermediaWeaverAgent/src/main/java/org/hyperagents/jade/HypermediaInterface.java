@@ -87,7 +87,8 @@ public class HypermediaInterface {
           if (containerID.isPresent()) {
             ContainerGraphBuilder builder = new ContainerGraphBuilder(containerID.get(), httpPort);
 
-            String responseBody = builder.addAgents(state.getAgentsInContainer(containerID.get()))
+            String responseBody = builder.addMetadata()
+              .addAgents(state.getAgentsInContainer(containerID.get()))
               .write(RDFFormat.TURTLE);
 
             response.setStatus(HttpServletResponse.SC_OK);

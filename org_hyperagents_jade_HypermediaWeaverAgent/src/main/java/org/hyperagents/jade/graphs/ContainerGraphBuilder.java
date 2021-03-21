@@ -3,6 +3,7 @@ package org.hyperagents.jade.graphs;
 import jade.core.AID;
 import jade.core.ContainerID;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.hyperagents.jade.PlatformState;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.util.Set;
@@ -25,6 +26,11 @@ public class ContainerGraphBuilder extends GraphBuilder {
   @Override
   public String getSubjectIRI() {
     return getBaseIRI() + "containers/" + containerID.getName() + "/";
+  }
+
+  public ContainerGraphBuilder addMetadata() {
+    graphBuilder.add(getSubjectIRI(), JADE.hasName, containerID.getName());
+    return this;
   }
 
   public ContainerGraphBuilder addAgents(Set<AID> agentIDs) {
