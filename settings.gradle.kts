@@ -8,4 +8,4 @@
  */
 
 rootProject.name = "jade-hypermedia"
-include("org_hyperagents_jade_HypermediaWeaverAgent")
+include("hwa-lib")

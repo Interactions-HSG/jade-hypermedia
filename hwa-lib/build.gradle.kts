@@ -44,7 +44,7 @@ tasks {
 
     args = listOf("-gui", "-http-host", "localhost", "-http-port", "3000",
       "-jade_core_management_AgentManagementService_agentspath",
-      "org_hyperagents_jade_HypermediaWeaverAgent/build/libs/",
+      "hwa-lib/build/libs/",
       "hwa:org.hyperagents.jade.HypermediaWeaverAgent")
 
     classpath = sourceSets["main"].runtimeClasspath
