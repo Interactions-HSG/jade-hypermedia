@@ -14,7 +14,7 @@ import org.hyperagents.jade.vocabs.STNCore;
 
 import java.util.Iterator;
 
-public class AgentGraphBuilder extends GraphBuilder {
+public class AgentGraphBuilder extends EntityGraphBuilder {
   private final AID agentID;
   private final ContainerID containerID;
   private final IRI agentIRI;
@@ -25,8 +25,8 @@ public class AgentGraphBuilder extends GraphBuilder {
     this.agentID = agentID;
     this.containerID = containerID;
 
-    graphBuilder.add(getSubjectIRI(), RDF.TYPE, rdf.createIRI(FIPA.AgentIdentifier));
-    agentIRI = addNonInformationResource(FIPA.identifierOf, "#agent");
+    graphBuilder.add(getDocumentIRI(), RDF.TYPE, rdf.createIRI(FIPA.AgentIdentifier));
+    agentIRI = createNonInformationResource(FIPA.identifierOf, "#agent");
     graphBuilder.add(agentIRI, RDF.TYPE, rdf.createIRI(FIPA.Agent));
     graphBuilder.add(agentIRI, RDF.TYPE, rdf.createIRI(STNCore.Agent));
 
@@ -39,9 +39,9 @@ public class AgentGraphBuilder extends GraphBuilder {
   }
 
   @Override
-  public String getSubjectIRI() {
+  public String getDocumentIRI() {
     ContainerGraphBuilder builder = new ContainerGraphBuilder(containerID, httpPort);
-    return builder.getSubjectIRI() + "agents/" + agentID.getLocalName();
+    return builder.getDocumentIRI() + "agents/" + agentID.getLocalName();
   }
 
   @Override

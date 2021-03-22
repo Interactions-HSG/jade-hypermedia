@@ -7,8 +7,8 @@ project implements a hypermedia interface for the JADE platform.
 
 A JADE application is composed of agents. Agents execute tasks and interact with one another through
 messages. Agents live in containers, which can be distributed across the Internet. In every deployment
-of the JADE platform, there is one *main container* that all other containers connect to. The main
-container can be replicated for fault tolerance.
+of the JADE platform, there is one *main container* that all other containers have to register with.
+The main container can be replicated for fault tolerance.
 
 ![JADE Architecture Overview](hwa-lib/src/main/resources/jade-architecture.png)
 

@@ -7,7 +7,7 @@ import org.hyperagents.jade.vocabs.JADE;
 
 import java.util.Set;
 
-public class ContainerGraphBuilder extends GraphBuilder {
+public class ContainerGraphBuilder extends EntityGraphBuilder {
   private final ContainerID containerID;
 
   public ContainerGraphBuilder(ContainerID containerID, int httpPort) {
@@ -16,26 +16,26 @@ public class ContainerGraphBuilder extends GraphBuilder {
     this.containerID = containerID;
 
     if (containerID.getMain()) {
-      graphBuilder.add(getSubjectIRI(), RDF.TYPE, rdf.createIRI(JADE.MainContainer));
+      graphBuilder.add(getDocumentIRI(), RDF.TYPE, rdf.createIRI(JADE.MainContainer));
     } else {
-      graphBuilder.add(getSubjectIRI(), RDF.TYPE, rdf.createIRI(JADE.Container));
+      graphBuilder.add(getDocumentIRI(), RDF.TYPE, rdf.createIRI(JADE.Container));
     }
   }
 
   @Override
-  public String getSubjectIRI() {
-    return getBaseIRI() + "containers/" + containerID.getName() + "/";
+  public String getDocumentIRI() {
+    return baseIRI + "containers/" + containerID.getName() + "/";
   }
 
   public ContainerGraphBuilder addMetadata() {
-    graphBuilder.add(getSubjectIRI(), JADE.hasName, containerID.getName());
+    graphBuilder.add(getDocumentIRI(), JADE.hasName, containerID.getName());
     return this;
   }
 
   public ContainerGraphBuilder addAgents(Set<AID> agentIDs) {
     for (AID aid : agentIDs) {
       AgentGraphBuilder agentGraph = new AgentGraphBuilder(containerID, aid, httpPort);
-      graphBuilder.add(getSubjectIRI(), JADE.containsAgent, rdf.createIRI(agentGraph.getEntityIRI()));
+      graphBuilder.add(getDocumentIRI(), JADE.containsAgent, rdf.createIRI(agentGraph.getEntityIRI()));
     }
 
     return this;

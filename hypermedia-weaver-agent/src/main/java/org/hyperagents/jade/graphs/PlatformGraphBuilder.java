@@ -13,7 +13,7 @@ import org.hyperagents.jade.vocabs.JADE;
 import java.util.Iterator;
 import java.util.Set;
 
-public class PlatformGraphBuilder extends GraphBuilder {
+public class PlatformGraphBuilder extends EntityGraphBuilder {
   private final IRI platformIRI;
   private final APDescription platformDescription;
 
@@ -22,8 +22,8 @@ public class PlatformGraphBuilder extends GraphBuilder {
 
     this.platformDescription = platformDescription;
 
-    graphBuilder.add(getSubjectIRI(), RDF.TYPE, rdf.createIRI(FIPA.APDescription));
-    platformIRI = addNonInformationResource(FIPA.descriptionOf, "#platform");
+    graphBuilder.add(getDocumentIRI(), RDF.TYPE, rdf.createIRI(FIPA.APDescription));
+    platformIRI = createNonInformationResource(FIPA.descriptionOf, "#platform");
   }
 
   public PlatformGraphBuilder addMetadata() {
@@ -75,6 +75,6 @@ public class PlatformGraphBuilder extends GraphBuilder {
 
   private String constructContainerIRI(ContainerID cid) {
     ContainerGraphBuilder builder = new ContainerGraphBuilder(cid, httpPort);
-    return builder.getSubjectIRI();
+    return builder.getDocumentIRI();
   }
 }
