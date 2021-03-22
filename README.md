@@ -10,7 +10,7 @@ messages. Agents live in containers, which can be distributed across the Interne
 of the JADE platform, there is one *main container* that all other containers have to register with.
 The main container can be replicated for fault tolerance.
 
-![JADE Architecture Overview](hwa-lib/src/main/resources/jade-architecture.png)
+![JADE Architecture Overview](hypermedia-weaver-agent/src/main/resources/jade-architecture.png)
 
 Image source: [Tutorial 1: JADE Architecture Overview](https://jade.tilab.com/documentation/tutorials-guides/jade-administration-tutorial/architecture-overview/)
 
