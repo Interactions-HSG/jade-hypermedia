@@ -1,6 +1,7 @@
 package org.hyperagents.jade.graphs;
 
 import jade.util.Logger;
+import jade.util.leap.Properties;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -31,50 +32,26 @@ public abstract class EntityGraphBuilder {
   protected final ValueFactory rdf;
   protected final ModelBuilder graphBuilder;
 
-  protected final String localAddress;
-  protected final int httpPort;
-  protected final String baseIRI;
+  protected final Properties config;
+  protected String baseIRI = "http://localhost:3000/";
 
   /**
    * Constructs an entity graph builder.
-   * @param httpAuthority the authority to be used when constructing HTTP IRIs
+   * @param config the set of properties provided as arguments to this container
    */
-  public EntityGraphBuilder(String httpAuthority) {
-    this(httpAuthority, -1);
-  }
-
-  /**
-   * Constructs an entity graph builder.
-   * @param httpAuthority the authority to be used when constructing HTTP IRIs
-   * @param httpPort the port ot be used when contructing HTTP IRIs
-   */
-  public EntityGraphBuilder(String httpAuthority, int httpPort) {
+  public EntityGraphBuilder(Properties config) {
     rdf = SimpleValueFactory.getInstance();
     graphBuilder = new ModelBuilder();
 
-    this.localAddress = httpAuthority;
-    this.httpPort = httpPort;
+    this.config = config;
+    String httpAuthority = config.getProperty("http-host", "localhost");
 
-    baseIRI = (httpPort < 0) ? "http://" + httpAuthority + "/"
-        : "http://" + httpAuthority + ":" + httpPort + "/";
-  }
-
-  /**
-   * Retrieves the IRI of the main subject of this graph. The main subject typically identifies an
-   * information resources.
-   * @return the document's IRI
-   */
-  public String getDocumentIRI() {
-    return baseIRI;
-  }
-
-  /**
-   * Retrieves the IRI of the entity described by this graph. If the entity is an information resource,
-   * this method should return the same value with the {@link #getDocumentIRI() getDocumentIRI} method.
-   * @return the entity's IRI
-   */
-  public String getEntityIRI() {
-    return baseIRI;
+    try {
+      int httpPort = Integer.parseInt(config.getProperty("http-port", "3000"));
+      baseIRI = "http://" + httpAuthority + ":" + httpPort + "/";
+    } catch (NumberFormatException e) {
+      LOGGER.log(Logger.SEVERE, "Provided HTTP port is not a number.");
+    }
   }
 
   /**
@@ -96,6 +73,24 @@ public abstract class EntityGraphBuilder {
     }
 
     return out.toString();
+  }
+
+  /**
+   * Retrieves the IRI of the main subject of this graph. The main subject typically identifies an
+   * information resources.
+   * @return the document's IRI
+   */
+  protected String getDocumentIRI() {
+    return baseIRI;
+  }
+
+  /**
+   * Retrieves the IRI of the entity described by this graph. If the entity is an information resource,
+   * this method should return the same value with the {@link #getDocumentIRI() getDocumentIRI} method.
+   * @return the entity's IRI
+   */
+  protected String getEntityIRI() {
+    return baseIRI;
   }
 
   /**

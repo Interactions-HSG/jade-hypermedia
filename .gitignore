@@ -9,4 +9,4 @@ build
 
 # Ignore JADE generated files
 APDescription.txt
-MTPs-Main-Container.txt
+MTPs-*.txt

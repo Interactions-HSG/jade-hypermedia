@@ -38,7 +38,7 @@ tasks {
 
   task<JavaExec>("runMain") {
     main = "jade.Boot"
-    args = listOf("-conf", "src/main/resources/main.properties",
+    args = listOf("-conf", "main.properties",
       "hwa:org.hyperagents.jade.HypermediaWeaverAgent")
     classpath = sourceSets["main"].runtimeClasspath
   }
@@ -53,7 +53,7 @@ tasks {
     val hwa = "hwa-" + System.currentTimeMillis() + ":org.hyperagents.jade.HypermediaWeaverAgent";
 
     main = "jade.Boot"
-    args = listOf("-container", "-conf", "src/main/resources/config.properties", hwa)
+    args = listOf("-container", "-conf", "peripheral.properties", hwa)
     classpath = sourceSets["main"].runtimeClasspath
   }
 }

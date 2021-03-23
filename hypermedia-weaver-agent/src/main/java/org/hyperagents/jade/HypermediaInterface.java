@@ -22,23 +22,24 @@ public class HypermediaInterface {
   private final static Logger LOGGER = Logger.getJADELogger(HypermediaInterface.class.getName());
 
   private Server server;
-  private final String httpHost;
-  private int httpPort;
+
+  private final Properties config;
 
   public HypermediaInterface(Properties config) {
-    httpHost = config.getProperty("http-host", "localhost");
+    this.config = config;
+
+    String httpHost = config.getProperty("http-host", "localhost");
 
     try {
-      httpPort = Integer.parseInt(config.getProperty("http-port", "3000"));
+      int httpPort = Integer.parseInt(config.getProperty("http-port", "3000"));
 
       server = new Server(httpPort);
       HandlerList list = createHandlerList();
       server.setHandler(list);
+      LOGGER.log(Logger.INFO, "HTTP config: host " + httpHost + ", port " + httpPort);
     } catch (NumberFormatException e) {
-      LOGGER.log(Logger.SEVERE, "The passed port " + httpPort + " is not a number.");
+      LOGGER.log(Logger.SEVERE, "Provided HTTP port is not a number.");
     }
-
-    LOGGER.log(Logger.INFO, "HTTP config: host " + httpHost + ", port " + httpPort);
   }
 
   public void start() throws Exception {
@@ -64,8 +65,7 @@ public class HypermediaInterface {
             && baseRequest.getRequestURI().matches("/")) {
           baseRequest.setHandled(true);
 
-          PlatformGraphBuilder builder = new PlatformGraphBuilder(state.getAPDescription(),
-              httpHost, httpPort);
+          PlatformGraphBuilder builder = new PlatformGraphBuilder(config, state.getAPDescription());
 
           String responseBody = builder.addMetadata()
               .addAPServices()
@@ -93,7 +93,7 @@ public class HypermediaInterface {
           Optional<ContainerID> containerID = state.getContainerIDByName(containerName);
 
           if (containerID.isPresent()) {
-            ContainerGraphBuilder builder = new ContainerGraphBuilder(containerID.get(), httpPort);
+            ContainerGraphBuilder builder = new ContainerGraphBuilder(config, containerID.get());
 
             String responseBody = builder.addMetadata()
               .addAgents(state.getAgentsInContainer(containerID.get()))
@@ -139,8 +139,7 @@ public class HypermediaInterface {
               LOGGER.log(Logger.INFO, "Not able to retrieve description of " + agentName + " in "
                 + containerName + ": agent does not exist");
             } else {
-              AgentGraphBuilder builder = new AgentGraphBuilder(containerID.get(), agentID.get(),
-                  httpPort);
+              AgentGraphBuilder builder = new AgentGraphBuilder(config, containerID.get(), agentID.get());
 
               String responseBody = builder.addMetadata()
                   .addAddresses()

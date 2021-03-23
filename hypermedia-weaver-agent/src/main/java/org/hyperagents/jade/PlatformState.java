@@ -7,6 +7,10 @@ import jade.util.Logger;
 
 import java.util.*;
 
+/**
+ * Singleton used by the Hypermedia Weaver Agent controlling this instance to record platform state.
+ * The {@link HypermediaInterface} retrieves and exposes data from this singleton.
+ */
 public class PlatformState {
   private final static Logger LOGGER = Logger.getJADELogger(PlatformState.class.getName());
 
