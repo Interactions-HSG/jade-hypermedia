@@ -44,14 +44,7 @@ public abstract class EntityGraphBuilder {
     graphBuilder = new ModelBuilder();
 
     this.config = config;
-    String httpAuthority = config.getProperty("http-host", "localhost");
-
-    try {
-      int httpPort = Integer.parseInt(config.getProperty("http-port", "3000"));
-      baseIRI = "http://" + httpAuthority + ":" + httpPort + "/";
-    } catch (NumberFormatException e) {
-      LOGGER.log(Logger.SEVERE, "Provided HTTP port is not a number.");
-    }
+    setBaseIRI();
   }
 
   /**
@@ -73,6 +66,17 @@ public abstract class EntityGraphBuilder {
     }
 
     return out.toString();
+  }
+
+  protected void setBaseIRI() {
+    String httpAuthority = config.getProperty("http-host", "localhost");
+
+    try {
+      int httpPort = Integer.parseInt(config.getProperty("http-port", "3000"));
+      baseIRI = "http://" + httpAuthority + ":" + httpPort + "/";
+    } catch (NumberFormatException e) {
+      LOGGER.log(Logger.SEVERE, "Provided HTTP port is not a number.");
+    }
   }
 
   /**

@@ -26,6 +26,7 @@ public class ContainerGraphBuilder extends EntityGraphBuilder {
 
     // TODO: configure HTTP port as well, but this has to be handled by HWAs
     this.config.setProperty("http-host", containerID.getAddress());
+    setBaseIRI();
 
     this.containerID = containerID;
 
