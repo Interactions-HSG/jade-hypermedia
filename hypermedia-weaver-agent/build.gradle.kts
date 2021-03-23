@@ -21,9 +21,6 @@ dependencies {
   // Use JUnit test framework.
   // testImplementation("junit:junit:4.13")
 
-  // This dependency is exported to consumers, that is to say found on their compile classpath.
-  // api("org.apache.commons:commons-math3:3.6.1")
-
   // These dependencies are used internally, and not exposed to consumers on their own compile classpath.
   implementation(files("src/main/resources/jade-4.5.0.jar"))
   implementation("org.eclipse.jetty.aggregate:jetty-all:9.0.0.RC2")
@@ -39,20 +36,24 @@ tasks {
     mergeServiceFiles()
   }
 
-  task<JavaExec>("run") {
+  task<JavaExec>("runMain") {
     main = "jade.Boot"
-
-    args = listOf("-gui", "-http-host", "localhost", "-http-port", "3000",
-      "-jade_core_management_AgentManagementService_agentspath",
-      "hwa-lib/build/libs/",
+    args = listOf("-conf", "src/main/resources/main.properties",
       "hwa:org.hyperagents.jade.HypermediaWeaverAgent")
-
     classpath = sourceSets["main"].runtimeClasspath
   }
 
-  task<JavaExec>("startContainer") {
+  task<JavaExec>("runLocal") {
     main = "jade.Boot"
     args = listOf("-container")
     classpath = files("src/main/resources/jade-4.5.0.jar")
+  }
+
+  task<JavaExec>("runRemote") {
+    val hwa = "hwa-" + System.currentTimeMillis() + ":org.hyperagents.jade.HypermediaWeaverAgent";
+
+    main = "jade.Boot"
+    args = listOf("-container", "-conf", "src/main/resources/config.properties", hwa)
+    classpath = sourceSets["main"].runtimeClasspath
   }
 }

@@ -36,20 +36,29 @@ First build the project with:
 gradle shadowJar
 ```
 
-Then start a main container with:
+Then start a main container:
 ```shell
-gradle run
+gradle runMain
 ```
 
-Open in your browser [http://localhost:3000/](http://localhost:3000/) to see and navigate a Linked Data
-view of the system. The above task will also launch the JADE GUI.
+Open [http://localhost:3000/](http://localhost:3000/) in your browser to navigate a Linked Data view
+of the system. The above task will also launch the JADE RMA GUI.
 
-To configure the HTTP host and port used by the HWAs for exposing the hypermedia interface, see the
-task's arguments in `hwa-lib/build.gradle.kts`.
+To configure the HTTP host and port used by the HWAs when exposing the hypermedia interface, see the
+`hypermedia-weaver-agent/main.properties`. The file contains a number of other
+parameters.
 
-You can start a regular container on the same machine with:
+To start regular containers on the same machine (run multiple times for multiple containers):
 ```shell
-gradle startContainer
+gradle runLocal
+```
+
+To start a peripheral container that connects to a main container on a different host:
+1. configure the `host` and `port` parameters in `hypermedia-weaver-agent/peripheral.properties` to
+   point to the host of the main container (the default port used by JADE is 1099)
+2. Then run:
+```shell
+gradle runRemote
 ```
 
 You can run the above task multiple times to start multiple containers on the same machine.
