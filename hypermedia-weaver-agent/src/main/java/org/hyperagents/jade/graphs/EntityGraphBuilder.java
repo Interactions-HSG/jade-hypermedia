@@ -1,8 +1,6 @@
 package org.hyperagents.jade.graphs;
 
 import jade.util.Logger;
-import jade.util.leap.Properties;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
@@ -32,19 +30,16 @@ public abstract class EntityGraphBuilder {
   protected final ValueFactory rdf;
   protected final ModelBuilder graphBuilder;
 
-  protected final Properties config;
-  protected String baseIRI = "http://localhost:3000/";
+  private final String baseIRI;
 
   /**
    * Constructs an entity graph builder.
-   * @param config the set of properties provided as arguments to this container
+   * @param iri the IRI that identifies the main subject of this graph
    */
-  public EntityGraphBuilder(Properties config) {
+  public EntityGraphBuilder(String iri) {
+    baseIRI = iri;
     rdf = SimpleValueFactory.getInstance();
     graphBuilder = new ModelBuilder();
-
-    this.config = config;
-    setBaseIRI();
   }
 
   /**
@@ -68,17 +63,6 @@ public abstract class EntityGraphBuilder {
     return out.toString();
   }
 
-  protected void setBaseIRI() {
-    String httpAuthority = config.getProperty("http-host", "localhost");
-
-    try {
-      int httpPort = Integer.parseInt(config.getProperty("http-port", "3000"));
-      baseIRI = "http://" + httpAuthority + ":" + httpPort + "/";
-    } catch (NumberFormatException e) {
-      LOGGER.log(Logger.SEVERE, "Provided HTTP port is not a number.");
-    }
-  }
-
   /**
    * Retrieves the IRI of the main subject of this graph. The main subject typically identifies an
    * information resources.
@@ -86,29 +70,5 @@ public abstract class EntityGraphBuilder {
    */
   protected String getDocumentIRI() {
     return baseIRI;
-  }
-
-  /**
-   * Retrieves the IRI of the entity described by this graph. If the entity is an information resource,
-   * this method should return the same value with the {@link #getDocumentIRI() getDocumentIRI} method.
-   * @return the entity's IRI
-   */
-  protected String getEntityIRI() {
-    return baseIRI;
-  }
-
-  /**
-   * Convenience method used to create a non-information resource described by this graph.
-   * @param property the property that relates the non-information resource to the information resource
-   *                 describing it
-   * @param fragment fragment to be used for creating a hash IRI that identifies the non-information
-   *                 resource (see <a href="https://www.w3.org/TR/cooluris/">W3C IG note on Cool URIs
-   *                 for the Semantic Web</a>
-   * @return a hash IRI that identifies the described non-information resource
-   */
-  protected IRI createNonInformationResource(String property, String fragment) {
-    IRI entityIRI = rdf.createIRI(getDocumentIRI() + fragment);
-    graphBuilder.add(getDocumentIRI(), property, entityIRI);
-    return entityIRI;
   }
 }

@@ -38,8 +38,7 @@ tasks {
 
   task<JavaExec>("runMain") {
     main = "jade.Boot"
-    args = listOf("-conf", "main.properties",
-      "hwa:org.hyperagents.jade.HypermediaWeaverAgent")
+    args = listOf("-conf", "main.properties", "-gui", "hwa:org.hyperagents.jade.HypermediaWeaverAgent")
     classpath = sourceSets["main"].runtimeClasspath
   }
 
@@ -49,11 +48,17 @@ tasks {
     classpath = files("src/main/resources/jade-4.5.0.jar")
   }
 
-  task<JavaExec>("runRemote") {
+  task<JavaExec>("runRemoteHWA") {
     val hwa = "hwa-" + System.currentTimeMillis() + ":org.hyperagents.jade.HypermediaWeaverAgent";
 
     main = "jade.Boot"
     args = listOf("-container", "-conf", "peripheral.properties", hwa)
     classpath = sourceSets["main"].runtimeClasspath
+  }
+
+  task<JavaExec>("runRemote") {
+    main = "jade.Boot"
+    args = listOf("-container", "-conf", "peripheral.properties")
+    classpath = files("src/main/resources/jade-4.5.0.jar")
   }
 }

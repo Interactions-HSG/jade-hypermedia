@@ -1,14 +1,11 @@
 package org.hyperagents.jade.graphs;
 
-import jade.core.AID;
-import jade.core.ContainerID;
-import jade.domain.FIPAAgentManagement.APDescription;
-import jade.util.leap.Properties;
 import org.eclipse.rdf4j.model.BNode;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.hyperagents.jade.PlatformState;
+import org.hyperagents.jade.platform.PlatformState;
+import org.hyperagents.jade.platform.WebAID;
+import org.hyperagents.jade.platform.WebAPDescription;
 import org.hyperagents.jade.vocabs.FIPA;
 import org.hyperagents.jade.vocabs.JADE;
 import org.hyperagents.jade.vocabs.STNCore;
@@ -19,36 +16,26 @@ import java.util.Iterator;
  * Constructs an RDF description of a JADE agent.
  */
 public class AgentGraphBuilder extends EntityGraphBuilder {
-  private final AID agentID;
-  private final ContainerID containerID;
-  private final IRI agentIRI;
+  private final WebAID agentID;
 
   /**
    * Constructs an agent graph builder. Unlike {@link PlatformGraphBuilder}, this builder uses as
    * the HTTP authority for exposed IRIs the address specified by the JADE container identifier passed
-   * as a parameter, which identies the agent's container. This is necessary for distributed deployments.
-   * @param config the set of properties provided as arguments to this container
-   * @param containerID the JADE container identifier for this agent's container
-   * @param agentID a JADE agent identifier
+   * as a parameter, which identifies the agent's container. This is necessary for distributed deployments.
+   * @param agentID the identifier of the JADE agent
    */
-  public AgentGraphBuilder(Properties config, ContainerID containerID, AID agentID) {
-    super(config);
-
-    // TODO: configure HTTP port as well, but this has to be handled by HWAs
-    this.config.setProperty("http-host", containerID.getAddress());
+  public AgentGraphBuilder(WebAID agentID) {
+    super(agentID.getEndpoint());
 
     this.agentID = agentID;
-    this.containerID = containerID;
 
     graphBuilder.add(getDocumentIRI(), RDF.TYPE, rdf.createIRI(FIPA.AgentIdentifier));
-    agentIRI = createNonInformationResource(FIPA.identifierOf, "#agent");
-    graphBuilder.add(agentIRI, RDF.TYPE, rdf.createIRI(FIPA.Agent));
-    graphBuilder.add(agentIRI, RDF.TYPE, rdf.createIRI(STNCore.Agent));
+    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, rdf.createIRI(FIPA.Agent));
+    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, rdf.createIRI(STNCore.Agent));
 
-    APDescription apDesc = PlatformState.getInstance().getAPDescription();
-    String platformIRI = new PlatformGraphBuilder(config, apDesc)
-        .getEntityIRI();
-    graphBuilder.add(agentIRI, rdf.createIRI(FIPA.hostedBy), rdf.createIRI(platformIRI));
+    WebAPDescription apDesc = PlatformState.getInstance().getAPDescription();
+    graphBuilder.add(agentID.getAgentIRI(), rdf.createIRI(FIPA.hostedBy),
+        rdf.createIRI(apDesc.getEndpoint()));
 
     graphBuilder.setNamespace("stn-core", STNCore.PREFIX);
   }
@@ -58,8 +45,8 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
    * @return this instance of agent graph builder (fluid API)
    */
   public AgentGraphBuilder addMetadata() {
-    graphBuilder.add(agentIRI, rdf.createIRI(FIPA.name), agentID.getName());
-    graphBuilder.add(agentIRI, rdf.createIRI(JADE.localName), agentID.getLocalName());
+    graphBuilder.add(agentID.getAgentIRI(), rdf.createIRI(FIPA.name), agentID.getName());
+    graphBuilder.add(agentID.getAgentIRI(), rdf.createIRI(JADE.localName), agentID.getLocalName());
 
     return this;
   }
@@ -88,21 +75,10 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
     return addOrderedList(FIPA.resolvers, agentID.getAllResolvers());
   }
 
-  @Override
-  protected String getDocumentIRI() {
-    ContainerGraphBuilder builder = new ContainerGraphBuilder(config, containerID);
-    return builder.getDocumentIRI() + "agents/" + agentID.getLocalName();
-  }
-
-  @Override
-  protected String getEntityIRI() {
-    return agentIRI.stringValue();
-  }
-
   private AgentGraphBuilder addOrderedList(String property, Iterator<String> list) {
     if (list.hasNext()) {
       BNode listNode = rdf.createBNode();
-      graphBuilder.add(agentIRI, rdf.createIRI(property), listNode);
+      graphBuilder.add(agentID.getAgentIRI(), rdf.createIRI(property), listNode);
 
       String head = list.next();
       addStringArrayAsList(listNode, head, list);

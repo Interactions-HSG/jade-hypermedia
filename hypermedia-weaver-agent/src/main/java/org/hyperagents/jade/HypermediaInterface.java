@@ -1,9 +1,6 @@
 package org.hyperagents.jade;
 
-import jade.core.AID;
-import jade.core.ContainerID;
 import jade.util.Logger;
-import jade.util.leap.Properties;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -12,6 +9,9 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.hyperagents.jade.graphs.AgentGraphBuilder;
 import org.hyperagents.jade.graphs.ContainerGraphBuilder;
 import org.hyperagents.jade.graphs.PlatformGraphBuilder;
+import org.hyperagents.jade.platform.PlatformState;
+import org.hyperagents.jade.platform.WebAID;
+import org.hyperagents.jade.platform.WebContainerID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,25 +21,12 @@ import java.util.Optional;
 public class HypermediaInterface {
   private final static Logger LOGGER = Logger.getJADELogger(HypermediaInterface.class.getName());
 
-  private Server server;
+  private final Server server;
 
-  private final Properties config;
-
-  public HypermediaInterface(Properties config) {
-    this.config = config;
-
-    String httpHost = config.getProperty("http-host", "localhost");
-
-    try {
-      int httpPort = Integer.parseInt(config.getProperty("http-port", "3000"));
-
-      server = new Server(httpPort);
-      HandlerList list = createHandlerList();
-      server.setHandler(list);
-      LOGGER.log(Logger.INFO, "HTTP config: host " + httpHost + ", port " + httpPort);
-    } catch (NumberFormatException e) {
-      LOGGER.log(Logger.SEVERE, "Provided HTTP port is not a number.");
-    }
+  public HypermediaInterface(int httpPort) {
+    server = new Server(httpPort);
+    HandlerList list = createHandlerList();
+    server.setHandler(list);
   }
 
   public void start() throws Exception {
@@ -65,7 +52,7 @@ public class HypermediaInterface {
             && baseRequest.getRequestURI().matches("/")) {
           baseRequest.setHandled(true);
 
-          PlatformGraphBuilder builder = new PlatformGraphBuilder(config, state.getAPDescription());
+          PlatformGraphBuilder builder = new PlatformGraphBuilder(state.getAPDescription());
 
           String responseBody = builder.addMetadata()
               .addAPServices()
@@ -90,10 +77,10 @@ public class HypermediaInterface {
 
           String[] elements = path.split("/");
           String containerName = elements[2];
-          Optional<ContainerID> containerID = state.getContainerIDByName(containerName);
+          Optional<WebContainerID> containerID = state.getContainerIDByName(containerName);
 
           if (containerID.isPresent()) {
-            ContainerGraphBuilder builder = new ContainerGraphBuilder(config, containerID.get());
+            ContainerGraphBuilder builder = new ContainerGraphBuilder(containerID.get());
 
             String responseBody = builder.addMetadata()
               .addAgents(state.getAgentsInContainer(containerID.get()))
@@ -125,21 +112,21 @@ public class HypermediaInterface {
           LOGGER.log(Logger.INFO, "Request for agent " + agentName + " in container "
               + containerName);
 
-          Optional<ContainerID> containerID = state.getContainerIDByName(containerName);
+          Optional<WebContainerID> containerID = state.getContainerIDByName(containerName);
 
           if (containerID.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             LOGGER.log(Logger.INFO, "Not able to retrieve description of " + agentName + " in "
               + containerName + ": container does not exist");
           } else {
-            Optional<AID> agentID = state.getAgentIDByName(containerID.get(), agentName);
+            Optional<WebAID> agentID = state.getAgentIDByName(containerID.get(), agentName);
 
             if (agentID.isEmpty()) {
               response.setStatus(HttpServletResponse.SC_NOT_FOUND);
               LOGGER.log(Logger.INFO, "Not able to retrieve description of " + agentName + " in "
                 + containerName + ": agent does not exist");
             } else {
-              AgentGraphBuilder builder = new AgentGraphBuilder(config, containerID.get(), agentID.get());
+              AgentGraphBuilder builder = new AgentGraphBuilder(agentID.get());
 
               String responseBody = builder.addMetadata()
                   .addAddresses()

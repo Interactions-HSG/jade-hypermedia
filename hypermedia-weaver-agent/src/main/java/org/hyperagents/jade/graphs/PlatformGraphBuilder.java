@@ -1,13 +1,11 @@
 package org.hyperagents.jade.graphs;
 
-import jade.core.ContainerID;
-import jade.domain.FIPAAgentManagement.APDescription;
 import jade.domain.FIPAAgentManagement.APService;
-import jade.util.leap.Properties;
 import org.eclipse.rdf4j.model.BNode;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.hyperagents.jade.platform.WebAPDescription;
+import org.hyperagents.jade.platform.WebContainerID;
 import org.hyperagents.jade.vocabs.FIPA;
 import org.hyperagents.jade.vocabs.JADE;
 
@@ -18,21 +16,19 @@ import java.util.Set;
  * Constructs an RDF description of a JADE platform.
  */
 public class PlatformGraphBuilder extends EntityGraphBuilder {
-  private final IRI platformIRI;
-  private final APDescription platformDescription;
+  private final WebAPDescription apDesc;
 
   /**
    * Constructs a platform graph builder.
-   * @param config the set of properties provided as arguments to this container
    * @param platformDescription an agent platform description as defined by the JADE platform
    */
-  public PlatformGraphBuilder(Properties config, APDescription platformDescription) {
-    super(config);
+  public PlatformGraphBuilder(WebAPDescription platformDescription) {
+    super(platformDescription.getEndpoint());
 
-    this.platformDescription = platformDescription;
+    this.apDesc = platformDescription;
 
     graphBuilder.add(getDocumentIRI(), RDF.TYPE, rdf.createIRI(FIPA.APDescription));
-    platformIRI = createNonInformationResource(FIPA.descriptionOf, "#platform");
+    graphBuilder.add(getDocumentIRI(), FIPA.descriptionOf, platformDescription.getPlatformIRI());
   }
 
   /**
@@ -40,7 +36,7 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
    * @return this instance of platform graph builder (fluid API)
    */
   public PlatformGraphBuilder addMetadata() {
-    graphBuilder.add(platformIRI, rdf.createIRI(FIPA.name), platformDescription.getName());
+    graphBuilder.add(apDesc.getPlatformIRI(), rdf.createIRI(FIPA.name), apDesc.getName());
     return this;
   }
 
@@ -52,12 +48,12 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
    */
   public PlatformGraphBuilder addAPServices() {
     @SuppressWarnings("unchecked")
-    Iterator<APService> services = platformDescription.getAllAPServices();
+    Iterator<APService> services = apDesc.getAllAPServices();
 
     while (services.hasNext()) {
       APService service = services.next();
       BNode serviceNode = rdf.createBNode();
-      graphBuilder.add(platformIRI, rdf.createIRI(FIPA.apService), serviceNode);
+      graphBuilder.add(apDesc.getPlatformIRI(), rdf.createIRI(FIPA.apService), serviceNode);
       addAPService(serviceNode, service);
     }
 
@@ -69,15 +65,15 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
    * @param containerIDs a set of container identifiers
    * @return this instance of platform graph builder (fluid API)
    */
-  public PlatformGraphBuilder addContainers(Set<ContainerID> containerIDs) {
+  public PlatformGraphBuilder addContainers(Set<WebContainerID> containerIDs) {
     // Add containment triples from main-container to all containers
-    for (ContainerID cid : containerIDs) {
-      if (cid.getMain()) {
-        graphBuilder.add(platformIRI, rdf.createIRI(JADE.hasMainContainer),
-            rdf.createIRI(constructContainerIRI(cid)));
+    for (WebContainerID cid : containerIDs) {
+      if (cid.isMain()) {
+        graphBuilder.add(apDesc.getPlatformIRI(), rdf.createIRI(JADE.hasMainContainer),
+            rdf.createIRI(cid.getEndpoint()));
       } else {
-        graphBuilder.add(platformIRI, rdf.createIRI(JADE.hasContainer),
-            rdf.createIRI(constructContainerIRI(cid)));
+        graphBuilder.add(apDesc.getPlatformIRI(), rdf.createIRI(JADE.hasContainer),
+            rdf.createIRI(cid.getEndpoint()));
       }
     }
 
@@ -95,10 +91,5 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
       String address = iterator.next();
       graphBuilder.add(serviceNode, rdf.createIRI(FIPA.address), address);
     }
-  }
-
-  private String constructContainerIRI(ContainerID cid) {
-    ContainerGraphBuilder builder = new ContainerGraphBuilder(config, cid);
-    return builder.getDocumentIRI();
   }
 }

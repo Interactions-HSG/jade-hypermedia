@@ -1,9 +1,7 @@
-package org.hyperagents.jade;
+package org.hyperagents.jade.platform;
 
-import jade.core.AID;
-import jade.core.ContainerID;
-import jade.domain.FIPAAgentManagement.APDescription;
 import jade.util.Logger;
+import org.hyperagents.jade.HypermediaInterface;
 
 import java.util.*;
 
@@ -16,9 +14,9 @@ public class PlatformState {
 
   private static PlatformState platform;
 
-  private APDescription platformDescription;
-  private final Set<ContainerID> containerIDs;
-  private final Map<ContainerID, Set<AID>> containedAgents;
+  private WebAPDescription platformDescription;
+  private final Set<WebContainerID> containerIDs;
+  private final Map<WebContainerID, Set<WebAID>> containedAgents;
 
   private PlatformState() {
     platformDescription = null;
@@ -34,11 +32,11 @@ public class PlatformState {
     return platform;
   }
 
-  public void setPlatformDescription(APDescription platformDescription) {
+  public void setPlatformDescription(WebAPDescription platformDescription) {
     this.platformDescription = platformDescription;
   }
 
-  public APDescription getAPDescription() {
+  public WebAPDescription getAPDescription() {
     return platformDescription;
   }
 
@@ -46,31 +44,31 @@ public class PlatformState {
     return containerIDs.size();
   }
 
-  public Optional<ContainerID> getContainerIDByName(String containerName) {
+  public Optional<WebContainerID> getContainerIDByName(String containerName) {
     return containerIDs.stream().filter(cid -> cid.getName().equals(containerName)).findAny();
   }
 
-  public void addContainerID(ContainerID containerID) {
+  public void addContainerID(WebContainerID containerID) {
     containerIDs.add(containerID);
   }
 
-  public boolean removeContainerID(ContainerID containerID) {
+  public boolean removeContainerID(WebContainerID containerID) {
     return containerIDs.remove(containerID);
   }
 
-  public Set<ContainerID> getContainerIDs() {
+  public Set<WebContainerID> getContainerIDs() {
     return Collections.unmodifiableSet(containerIDs);
   }
 
-  public void addAgentToContainer(ContainerID containerID, AID agentID) {
-    Set<AID> agentIDs = containedAgents.getOrDefault(containerID, new HashSet<>());
+  public void addAgentToContainer(WebContainerID containerID, WebAID agentID) {
+    Set<WebAID> agentIDs = containedAgents.getOrDefault(containerID, new HashSet<>());
     agentIDs.add(agentID);
     containedAgents.put(containerID, agentIDs);
   }
 
-  public void removeAgentFromContainer(ContainerID containerID, AID agentID) {
+  public void removeAgentFromContainer(WebContainerID containerID, WebAID agentID) {
     if (containedAgents.containsKey(containerID)) {
-      Set<AID> agentIDs = containedAgents.get(containerID);
+      Set<WebAID> agentIDs = containedAgents.get(containerID);
       agentIDs.remove(agentID);
 
       if (agentIDs.isEmpty()) {
@@ -84,15 +82,16 @@ public class PlatformState {
     }
   }
 
-  public Set<AID> getAgentsInContainer(ContainerID containerID) {
+  public Set<WebAID> getAgentsInContainer(WebContainerID containerID) {
     if (containedAgents.containsKey(containerID)) {
       return Collections.unmodifiableSet(containedAgents.get(containerID));
     }
+
     return new HashSet<>();
   }
 
-  public Optional<AID> getAgentIDByName(ContainerID containerID, String agentName) {
-    Set<AID> agentIDs = containedAgents.get(containerID);
+  public Optional<WebAID> getAgentIDByName(WebContainerID containerID, String agentName) {
+    Set<WebAID> agentIDs = containedAgents.get(containerID);
     if (agentIDs == null) {
       return Optional.empty();
     }

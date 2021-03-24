@@ -44,19 +44,26 @@ gradle runMain
 Open [http://localhost:3000/](http://localhost:3000/) in your browser to navigate a Linked Data view
 of the system. The above task will also launch the JADE RMA GUI.
 
-To configure the HTTP host and port used by the HWAs when exposing the hypermedia interface, see the
-`hypermedia-weaver-agent/main.properties`. The file contains a number of other
-parameters.
+To configure the HTTP endpoints used by the HWAs when exposing the hypermedia interface, see
+`local-host` and `http-port` in `hypermedia-weaver-agent/main.properties`. The file contains a number
+of other parameters.
 
 To start regular containers on the same machine (run multiple times for multiple containers):
 ```shell
 gradle runLocal
 ```
 
-To start a peripheral container that connects to a main container on a different host:
-1. configure the `host` and `port` parameters in `hypermedia-weaver-agent/peripheral.properties` to
+To start a peripheral container with an HWA that connects to a main container on a different host:
+1. set the `host` and `port` parameters in `hypermedia-weaver-agent/peripheral.properties` to
    point to the host of the main container (the default port used by JADE is 1099)
-2. Then run:
+2. set the `local-host` and `http-port` parameters in `hypermedia-weaver-agent/peripheral.properties`
+3. Then run:
+```shell
+gradle runRemoteHWA
+```
+
+To start a remote JADE container without an HWA, set the `host` and `port` parameters (Setp 1. from
+above) and then run:
 ```shell
 gradle runRemote
 ```
