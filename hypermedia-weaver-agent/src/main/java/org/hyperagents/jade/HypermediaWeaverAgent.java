@@ -5,7 +5,6 @@ import jade.core.ContainerID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.Property;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.domain.introspection.*;
@@ -34,37 +33,32 @@ import java.util.*;
  */
 public class HypermediaWeaverAgent extends ToolAgent {
   private static final String HYPERMEDIA_SERVICE = "hypermedia-weaving";
-  private static final String HYPERMEDIA_SERVICE_HOST = "http-host";
-  private static final String DEFAULT_HYPERMEDIA_SERVICE_PROTOCOL = "http";
-  private static final int DEFAULT_HYPERMEDIA_SERVICE_PORT = 3000;
+  private static final String HYPERMEDIA_DEFAULT_PROTOCOL = "http";
+  private static final int HYPERMEDIA_DEFAULT_PORT = 3000;
 
   private String httpHost;
   private int httpPort;
   private String httpEndpoint;
   private HypermediaInterface hypermediaService;
 
-  private Map<String, Set<ContainerID>> inquires;
+  private Map<String, Set<ContainerID>> pendingContainers;
+  private Map<String, String> hTable;
 
   @Override
   protected void toolSetup() {
     logger = Logger.getMyLogger(getName());
 
-    // Create hypermedia server with boot config
-    httpEndpoint = constructHTTPEndpoint();
-    hypermediaService = new HypermediaInterface(httpPort);
+    // Read init parameters
+    init();
+    // Register the hypermedia service with the DF
+    registerWithDF();
+    // Announce the service to all other HWAs
+    informAllWeavers();
 
-    try {
-      hypermediaService.start();
-      registerWithDF();
-    } catch (Exception e) {
-      logger.log(Logger.SEVERE, "Starting the HTTP server threw an exception: "
-        + e.getMessage());
-    }
-
-    inquires = new Hashtable<>();
-
-    addBehaviour(new AMSListenerBehaviour());
+    // This behavior handles inform messages from other HWAs
     addBehaviour(new HandleWeaverMessagesBehaviour());
+    // This behaviour listens for events of interest from the AMS
+    addBehaviour(new AMSListenerBehaviour());
   }
 
   @Override
@@ -83,50 +77,33 @@ public class HypermediaWeaverAgent extends ToolAgent {
     send(getCancel());
   }
 
-  private String constructBaseEndpoint(String authority, String port) {
-    return DEFAULT_HYPERMEDIA_SERVICE_PROTOCOL + "://" + authority + ":" + port + "/";
-  }
+  private void init() {
+    pendingContainers = new Hashtable<>();
+    hTable = new Hashtable<>();
 
-  private String constructContainerIRI(ContainerID cid) {
-    return constructContainerIRI(cid, String.valueOf(httpPort));
-  }
-
-  private String constructContainerIRI(ContainerID cid, String port) {
-    return constructBaseEndpoint(cid.getAddress(), port) + "containers/" + cid.getName() + "/";
-  }
-
-  private String constructHTTPEndpoint() {
+    // Read initialization parameters
     Properties config = getBootProperties();
-
     httpHost = config.getProperty("local-host", "localhost");
-    String port = config.getProperty("http-port");
+    String port = config.getProperty("http-port", String.valueOf(HYPERMEDIA_DEFAULT_PORT));
 
-    if (port == null) {
-      httpPort = DEFAULT_HYPERMEDIA_SERVICE_PORT;
-    } else {
-      try {
-        httpPort = Integer.parseInt(port);
-      } catch (NumberFormatException e) {
-        logger.log(Logger.SEVERE, "Provided port is not a valid number: " + e.getMessage());
-      }
+    try {
+      httpPort = Integer.parseInt(port);
+      // Start hypermedia service
+      hypermediaService = new HypermediaInterface(httpPort);
+      hypermediaService.start();
+    } catch (NumberFormatException e) {
+      logger.log(Logger.SEVERE, "Trying default HTTP port, provided port is not a valid number: "
+          + e.getMessage());
+      httpPort = HYPERMEDIA_DEFAULT_PORT;
+    } catch (Exception e) {
+      logger.log(Logger.SEVERE, "Starting the HTTP server failed: " + e.getMessage());
     }
 
-    return constructBaseEndpoint(httpHost, String.valueOf(httpPort));
-  }
-
-  private DFAgentDescription constructHWADescription(String host) {
-    DFAgentDescription dfd = new DFAgentDescription();
-    ServiceDescription sd = new ServiceDescription();
-    sd.setName(HYPERMEDIA_SERVICE);
-    sd.setType(HYPERMEDIA_SERVICE);
-    sd.addProperties(new Property(HYPERMEDIA_SERVICE_HOST, host));
-    dfd.addServices(sd);
-
-    return dfd;
+    httpEndpoint = HYPERMEDIA_DEFAULT_PROTOCOL + "://" + httpHost + ":" + httpPort + "/";
   }
 
   private void registerWithDF() {
-    DFAgentDescription dfd = constructHWADescription(httpHost);
+    DFAgentDescription dfd = constructHWADescription();
 
     try {
       DFService.register(this, dfd);
@@ -137,8 +114,48 @@ public class HypermediaWeaverAgent extends ToolAgent {
     }
   }
 
-  private DFAgentDescription[] getRegisteredHWAs(String hostName) {
-    DFAgentDescription template = constructHWADescription(hostName);
+  private void informAllWeavers() {
+    DFAgentDescription[] weavers = getRegisteredHWAs();
+
+    if (weavers != null && weavers.length > 0) {
+      ACLMessage inform = new ACLMessage(ACLMessage.INFORM);
+      inform.setConversationId(HYPERMEDIA_SERVICE);
+      inform.setContent(HYPERMEDIA_DEFAULT_PROTOCOL + ":" + httpHost + ":" + httpPort);
+
+      for (DFAgentDescription weaver : weavers) {
+        if (weaver.getName() != getAID()) {
+          inform.addReceiver(weaver.getName());
+        }
+      }
+
+      send(inform);
+    }
+  }
+
+  private String constructContainerIRI(ContainerID cid) {
+    return constructContainerIRI(cid, httpEndpoint);
+  }
+
+  private String constructContainerIRI(ContainerID cid, String endpoint) {
+    return endpoint + "containers/" + cid.getName() + "/";
+  }
+
+  private String constructAgentIRI(ContainerID cid, AID aid) {
+    return constructContainerIRI(cid) + "agents/" + aid.getLocalName();
+  }
+
+  private DFAgentDescription constructHWADescription() {
+    DFAgentDescription dfd = new DFAgentDescription();
+    ServiceDescription sd = new ServiceDescription();
+    sd.setName(HYPERMEDIA_SERVICE);
+    sd.setType(HYPERMEDIA_SERVICE);
+    dfd.addServices(sd);
+
+    return dfd;
+  }
+
+  private DFAgentDescription[] getRegisteredHWAs() {
+    DFAgentDescription template = constructHWADescription();
 
     try {
       return DFService.search(this, template);
@@ -150,12 +167,12 @@ public class HypermediaWeaverAgent extends ToolAgent {
   }
 
   private void exposeContainerID(ContainerID cid) {
-    exposeContainerID(cid, String.valueOf(httpPort));
+    exposeContainerID(cid, httpEndpoint);
   }
 
-  private void exposeContainerID(ContainerID cid, String port) {
+  private void exposeContainerID(ContainerID cid, String endpoint) {
     PlatformState state = PlatformState.getInstance();
-    state.addContainerID(new WebContainerID(cid, constructContainerIRI(cid, port)));
+    state.addContainerID(new WebContainerID(cid, constructContainerIRI(cid, endpoint)));
 
     logger.log(Logger.INFO, "New container added: " + cid.getName() + " "
       + cid.getAddress());
@@ -170,33 +187,32 @@ public class HypermediaWeaverAgent extends ToolAgent {
       ACLMessage message = myAgent.receive(template);
 
       if (message != null) {
-        if (message.getPerformative() == ACLMessage.QUERY_REF) {
-          String address = message.getContent();
-          logger.info("Received HWA query for address: " + address);
-
-          ACLMessage reply = message.createReply();
-          reply.setPerformative(ACLMessage.INFORM_REF);
-          reply.setContent(address + ":" + httpPort);
-
-          myAgent.send(reply);
-        } else if (message.getPerformative() == ACLMessage.INFORM_REF) {
-          // TODO: checks
+        if (message.getPerformative() == ACLMessage.INFORM) {
+          // Content format is protocol:address:port
           String[] payload = message.getContent().split(":");
-          logger.info("HWA reply: received address " + payload[0] + " and port " + payload[1]);
+          String address = payload[1];
+          String endpoint = payload[0] + "://" + address + ":" + payload[2] + "/";
 
-          processAllContainers(payload[0], payload[1]);
+          logger.info("Discovered new weaver: " + message.getSender().getName()
+              + " for endpoint " + endpoint);
+
+          // Keep track of the discovered endpoints
+          hTable.put(address, endpoint);
+          // Check any known containers for this endpoint
+          checkPendingContainers(address, endpoint);
         }
       } else {
         block();
       }
     }
 
-    private void processAllContainers(String address, String port) {
-      Set<ContainerID> containerIDs = inquires.remove(address);
+    private void checkPendingContainers(String address, String endpoint) {
+      Set<ContainerID> containers = pendingContainers.get(address);
 
-      if (containerIDs != null) {
-        for (ContainerID cid : containerIDs) {
-          exposeContainerID(cid, port);
+      if (containers != null) {
+        for (ContainerID cid : containers) {
+          logger.info("Exposing remote container: " + cid);
+          exposeContainerID(cid, endpoint);
         }
       }
     }
@@ -223,25 +239,22 @@ public class HypermediaWeaverAgent extends ToolAgent {
         logger.info("New container: " + cid);
 
         // Check if this is a local container
-        String address = cid.getAddress();
-        if (isLocalAddress(address) || address.equalsIgnoreCase(httpHost)) {
+        String containerAddress = cid.getAddress();
+        if (isLocalAddress(containerAddress) || containerAddress.equalsIgnoreCase(httpHost)) {
           logger.info("Exposing local container: " + cid);
           exposeContainerID(cid);
         } else {
-          logger.info("Container is not local: " + cid);
-          // If not, then search for an HWA
-          Optional<DFAgentDescription> remoteHWA = getWeaverForHost(cid.getAddress());
+          String endpoint = hTable.get(containerAddress);
 
-          if (remoteHWA.isEmpty()) {
-            logger.warning("Could not find an HWA for host " + cid.getAddress()
-                + ". Containers on this machine will not be shown.");
+          if (endpoint == null) {
+            logger.info("Container is not local and I don't know this address: " + cid);
+            Set<ContainerID> containerIDs = pendingContainers.getOrDefault(containerAddress,
+              new HashSet<>());
+            containerIDs.add(cid);
+            pendingContainers.put(containerAddress, containerIDs);
           } else {
-            // An HWA was found, send a query to retrieve the port
-            queryWeaver(remoteHWA.get().getName(), cid.getAddress());
-            // Communication is async, we register the query and wait for a response
-            saveInquiry(cid);
-            // We are done for now
-            logger.info("Sent query for " + cid.getAddress() + " to " + remoteHWA.get().getName());
+            logger.info("Container is not local, but I know this address: " + cid);
+            exposeContainerID(cid, endpoint);
           }
         }
       });
@@ -289,12 +302,6 @@ public class HypermediaWeaverAgent extends ToolAgent {
       });
     }
 
-    private void saveInquiry(ContainerID cid) {
-      Set<ContainerID> containerIDs = inquires.getOrDefault(cid.getAddress(), new HashSet<>());
-      containerIDs.add(cid);
-      inquires.put(cid.getAddress(), containerIDs);
-    }
-
     private boolean isLocalAddress(String host) {
       try {
         InetAddress address = InetAddress.getByName(host);
@@ -315,33 +322,6 @@ public class HypermediaWeaverAgent extends ToolAgent {
       }
 
       return false;
-    }
-
-    private Optional<DFAgentDescription> getWeaverForHost(String host) {
-      DFAgentDescription[] result = getRegisteredHWAs(host);
-
-      if (result == null || result.length == 0) {
-        return Optional.empty();
-      }
-
-      if (result.length > 1) {
-        logger.warning("Multiple HWAs are registered for host " + host);
-      }
-
-      return Optional.of(result[0]);
-    }
-
-    private void queryWeaver(AID weaver, String host) {
-      // An HWA was found, send a query to retrieve the port
-      ACLMessage request = new ACLMessage(ACLMessage.QUERY_REF);
-      request.addReceiver(weaver);
-      request.setConversationId(HYPERMEDIA_SERVICE);
-      request.setContent(host);
-      myAgent.send(request);
-    }
-
-    private String constructAgentIRI(ContainerID cid, AID aid) {
-      return constructContainerIRI(cid) + "agents/" + aid.getLocalName();
     }
   }
 }
