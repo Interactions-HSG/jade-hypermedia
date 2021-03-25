@@ -6,7 +6,7 @@ public class WebContainerID extends WebWrapper {
   private final ContainerID containerID;
 
   public WebContainerID(ContainerID containerID, String endpoint) {
-    super(endpoint);
+    super(endpoint + "containers/" + containerID.getName() + "/");
     this.containerID = containerID;
   }
 

@@ -7,7 +7,7 @@ public abstract class WebWrapper {
     this.endpoint = endpoint;
   }
 
-  public String getEndpoint() {
+  public String getIRI() {
     return endpoint;
   }
 }

@@ -5,14 +5,20 @@ import jade.util.leap.Iterator;
 
 public class WebAID extends WebWrapper {
   private final AID agentID;
+  private final String containerIRI;
 
-  public WebAID(AID agentID, String endpoint) {
-    super(endpoint);
+  public WebAID(AID agentID, String containerIRI) {
+    super(containerIRI + "agents/" + agentID.getLocalName());
     this.agentID = agentID;
+    this.containerIRI = containerIRI;
   }
 
   public String getAgentIRI() {
-    return getEndpoint() + "#agent";
+    return getIRI() + "#agent";
+  }
+
+  public String getContainerIRI() {
+    return containerIRI;
   }
 
   public String getName() {

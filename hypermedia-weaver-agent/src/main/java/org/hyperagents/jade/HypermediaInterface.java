@@ -1,6 +1,7 @@
 package org.hyperagents.jade;
 
 import jade.util.Logger;
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 public class HypermediaInterface {
   private final static Logger LOGGER = Logger.getJADELogger(HypermediaInterface.class.getName());
+  private final static String TURTLE_MEDIA_TYPE = "text/turtle;charset=UTF-8";
 
   private final Server server;
 
@@ -49,7 +51,20 @@ public class HypermediaInterface {
       public void handle(String target, Request baseRequest, HttpServletRequest request,
                          HttpServletResponse response) throws IOException {
         if (baseRequest.getMethod().matches("GET")
-            && baseRequest.getRequestURI().matches("/")) {
+          && baseRequest.getRequestURI().matches("/")) {
+          baseRequest.setHandled(true);
+          response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+          response.setHeader(HttpHeader.LOCATION.asString(), "/ap-description");
+        }
+      }
+    });
+
+    list.addHandler(new AbstractHandler() {
+      @Override
+      public void handle(String target, Request baseRequest, HttpServletRequest request,
+                         HttpServletResponse response) throws IOException {
+        if (baseRequest.getMethod().matches("GET")
+            && baseRequest.getRequestURI().matches("/ap-description")) {
           baseRequest.setHandled(true);
 
           PlatformGraphBuilder builder = new PlatformGraphBuilder(state.getAPDescription());
@@ -60,7 +75,7 @@ public class HypermediaInterface {
               .write(RDFFormat.TURTLE);
 
           response.setStatus(HttpServletResponse.SC_OK);
-          response.setContentType("text/turtle");
+          response.setContentType(TURTLE_MEDIA_TYPE);
           response.getWriter().print(responseBody);
         }
       }
@@ -72,7 +87,7 @@ public class HypermediaInterface {
                          HttpServletResponse response) throws IOException {
         String path = baseRequest.getRequestURI();
         if (baseRequest.getMethod().matches("GET")
-            && path.matches("/containers/[^/]*(/$)?")) {
+            && path.matches("/containers/[^/]+(/$)?")) {
           baseRequest.setHandled(true);
 
           String[] elements = path.split("/");
@@ -87,7 +102,7 @@ public class HypermediaInterface {
               .write(RDFFormat.TURTLE);
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType("text/turtle");
+            response.setContentType(TURTLE_MEDIA_TYPE);
             response.getWriter().print(responseBody);
           } else {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -102,7 +117,7 @@ public class HypermediaInterface {
                          HttpServletResponse response) throws IOException {
         String path = baseRequest.getRequestURI();
         if (baseRequest.getMethod().matches("GET")
-            && path.matches("/containers/[^/]*/agents/[^/]*(/$)?")) {
+            && path.matches("/containers/[^/]+/agents/[^/]+(/$)?")) {
           baseRequest.setHandled(true);
 
           String[] elements = path.split("/");
@@ -134,7 +149,7 @@ public class HypermediaInterface {
                   .write(RDFFormat.TURTLE);
 
               response.setStatus(HttpServletResponse.SC_OK);
-              response.setContentType("text/turtle");
+              response.setContentType(TURTLE_MEDIA_TYPE);
               response.getWriter().print(responseBody);
             }
           }

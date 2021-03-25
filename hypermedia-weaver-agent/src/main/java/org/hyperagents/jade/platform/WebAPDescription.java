@@ -7,16 +7,20 @@ public class WebAPDescription extends WebWrapper {
   private final APDescription apDescription;
 
   public WebAPDescription(APDescription apDescription, String endpoint) {
-    super(endpoint);
+    super(endpoint  + "ap-description");
     this.apDescription = apDescription;
   }
 
   public String getPlatformIRI() {
-    return getEndpoint() + "#platform";
+    return getIRI() + "#platform";
   }
 
   public String getName() {
     return apDescription.getName();
+  }
+
+  public APDescription getApDescription() {
+    return apDescription;
   }
 
   public Iterator getAllAPServices() {

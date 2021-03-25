@@ -14,11 +14,13 @@ public class PlatformState {
 
   private static PlatformState platform;
 
+  private String mainNodeEndpoint;
   private WebAPDescription platformDescription;
   private final Set<WebContainerID> containerIDs;
   private final Map<WebContainerID, Set<WebAID>> containedAgents;
 
   private PlatformState() {
+    mainNodeEndpoint = null;
     platformDescription = null;
     containerIDs = new HashSet<>();
     containedAgents = new Hashtable<>();
@@ -32,7 +34,15 @@ public class PlatformState {
     return platform;
   }
 
-  public void setPlatformDescription(WebAPDescription platformDescription) {
+  public void setMainNodeEndpoint(String endpoint) {
+    mainNodeEndpoint = endpoint;
+  }
+
+  public String getMainContainerEndpoint() {
+    return mainNodeEndpoint;
+  }
+
+  public void setAPDescription(WebAPDescription platformDescription) {
     this.platformDescription = platformDescription;
   }
 

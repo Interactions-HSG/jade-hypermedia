@@ -9,13 +9,13 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
-import org.hyperagents.jade.HypermediaInterface;
 import org.hyperagents.jade.vocabs.FIPA;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 
 /**
  * The entity graph builder is used to construct RDF representations of entities in a JADE system.
@@ -25,7 +25,7 @@ import java.io.OutputStream;
  * This is an abstract class intended to be extended. The current implementation is based on RDF4J.
  */
 public abstract class EntityGraphBuilder {
-  protected final static Logger LOGGER = Logger.getJADELogger(HypermediaInterface.class.getName());
+  protected final static Logger LOGGER = Logger.getJADELogger(EntityGraphBuilder.class.getName());
 
   protected final ValueFactory rdf;
   protected final ModelBuilder graphBuilder;
@@ -54,9 +54,10 @@ public abstract class EntityGraphBuilder {
     graphBuilder.setNamespace("fipa", FIPA.PREFIX);
 
     try (out) {
-      Rio.write(graphBuilder.build(), out, format,
-        new WriterConfig().set(BasicWriterSettings.INLINE_BLANK_NODES, true));
-    } catch (UnsupportedRDFormatException | IOException e) {
+      Rio.write(graphBuilder.build(), out, getDocumentIRI(), format,
+        new WriterConfig().set(BasicWriterSettings.INLINE_BLANK_NODES, true)
+            .set(BasicWriterSettings.BASE_DIRECTIVE, true));
+    } catch (UnsupportedRDFormatException | IOException | URISyntaxException e) {
       LOGGER.log(Logger.SEVERE, e.getMessage());
     }
 

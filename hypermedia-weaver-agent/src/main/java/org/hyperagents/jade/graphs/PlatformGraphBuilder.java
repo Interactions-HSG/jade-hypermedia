@@ -23,12 +23,12 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
    * @param platformDescription an agent platform description as defined by the JADE platform
    */
   public PlatformGraphBuilder(WebAPDescription platformDescription) {
-    super(platformDescription.getEndpoint());
+    super(platformDescription.getIRI());
 
-    this.apDesc = platformDescription;
+    apDesc = platformDescription;
 
-    graphBuilder.add(getDocumentIRI(), RDF.TYPE, rdf.createIRI(FIPA.APDescription));
-    graphBuilder.add(getDocumentIRI(), FIPA.descriptionOf, platformDescription.getPlatformIRI());
+    graphBuilder.add(getDocumentIRI(), RDF.TYPE, FIPA.APDescription);
+    graphBuilder.add(getDocumentIRI(), FIPA.descriptionOf, rdf.createIRI(apDesc.getPlatformIRI()));
   }
 
   /**
@@ -36,7 +36,7 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
    * @return this instance of platform graph builder (fluid API)
    */
   public PlatformGraphBuilder addMetadata() {
-    graphBuilder.add(apDesc.getPlatformIRI(), rdf.createIRI(FIPA.name), apDesc.getName());
+    graphBuilder.add(apDesc.getPlatformIRI(), FIPA.name, apDesc.getName());
     return this;
   }
 
@@ -53,7 +53,7 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
     while (services.hasNext()) {
       APService service = services.next();
       BNode serviceNode = rdf.createBNode();
-      graphBuilder.add(apDesc.getPlatformIRI(), rdf.createIRI(FIPA.apService), serviceNode);
+      graphBuilder.add(apDesc.getPlatformIRI(), FIPA.apService, serviceNode);
       addAPService(serviceNode, service);
     }
 
@@ -69,11 +69,11 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
     // Add containment triples from main-container to all containers
     for (WebContainerID cid : containerIDs) {
       if (cid.isMain()) {
-        graphBuilder.add(apDesc.getPlatformIRI(), rdf.createIRI(JADE.hasMainContainer),
-            rdf.createIRI(cid.getEndpoint()));
+        LOGGER.info("Adding triple for container: " + cid.getIRI());
+        graphBuilder.add(apDesc.getPlatformIRI(), JADE.hasMainContainer, rdf.createIRI(cid.getIRI()));
       } else {
-        graphBuilder.add(apDesc.getPlatformIRI(), rdf.createIRI(JADE.hasContainer),
-            rdf.createIRI(cid.getEndpoint()));
+        LOGGER.info("Adding triple for container: " + cid.getIRI());
+        graphBuilder.add(apDesc.getPlatformIRI(), JADE.hasContainer, rdf.createIRI(cid.getIRI()));
       }
     }
 
@@ -81,15 +81,15 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
   }
 
   private void addAPService(Resource serviceNode, APService service) {
-    graphBuilder.add(serviceNode, rdf.createIRI(FIPA.name), service.getName());
-    graphBuilder.add(serviceNode, rdf.createIRI(FIPA.type), service.getType());
+    graphBuilder.add(serviceNode, FIPA.name, service.getName());
+    graphBuilder.add(serviceNode, FIPA.type, service.getType());
 
     @SuppressWarnings("unchecked")
     Iterator<String> iterator = service.getAllAddresses();
 
     while (iterator.hasNext()) {
       String address = iterator.next();
-      graphBuilder.add(serviceNode, rdf.createIRI(FIPA.address), address);
+      graphBuilder.add(serviceNode, FIPA.address, rdf.createIRI(address));
     }
   }
 }

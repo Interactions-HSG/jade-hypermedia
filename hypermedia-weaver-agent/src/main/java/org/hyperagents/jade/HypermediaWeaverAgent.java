@@ -1,6 +1,5 @@
 package org.hyperagents.jade;
 
-import jade.core.AID;
 import jade.core.ContainerID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
@@ -132,18 +131,6 @@ public class HypermediaWeaverAgent extends ToolAgent {
     }
   }
 
-  private String constructContainerIRI(ContainerID cid) {
-    return constructContainerIRI(cid, httpEndpoint);
-  }
-
-  private String constructContainerIRI(ContainerID cid, String endpoint) {
-    return endpoint + "containers/" + cid.getName() + "/";
-  }
-
-  private String constructAgentIRI(ContainerID cid, AID aid) {
-    return constructContainerIRI(cid) + "agents/" + aid.getLocalName();
-  }
-
   private DFAgentDescription constructHWADescription() {
     DFAgentDescription dfd = new DFAgentDescription();
     ServiceDescription sd = new ServiceDescription();
@@ -172,10 +159,10 @@ public class HypermediaWeaverAgent extends ToolAgent {
 
   private void exposeContainerID(ContainerID cid, String endpoint) {
     PlatformState state = PlatformState.getInstance();
-    state.addContainerID(new WebContainerID(cid, constructContainerIRI(cid, endpoint)));
+    state.addContainerID(new WebContainerID(cid, endpoint));
 
     logger.log(Logger.INFO, "New container added: " + cid.getName() + " "
-      + cid.getAddress());
+        + cid.getAddress() + " " + endpoint);
     logger.log(Logger.INFO, "Total containers: " + state.getNumberOfContainers());
   }
 
@@ -227,7 +214,7 @@ public class HypermediaWeaverAgent extends ToolAgent {
       handlersTable.put(IntrospectionVocabulary.PLATFORMDESCRIPTION, (EventHandler) ev -> {
         PlatformDescription pd = (PlatformDescription) ev;
         WebAPDescription apDesc = new WebAPDescription(pd.getPlatform(), httpEndpoint);
-        state.setPlatformDescription(apDesc);
+        state.setAPDescription(apDesc);
 
         logger.log(Logger.INFO, "Platform name: " + apDesc.getName());
       });
@@ -255,6 +242,10 @@ public class HypermediaWeaverAgent extends ToolAgent {
           } else {
             logger.info("Container is not local, but I know this address: " + cid);
             exposeContainerID(cid, endpoint);
+
+            if (cid.getMain()) {
+              state.setMainNodeEndpoint(endpoint);
+            }
           }
         }
       });
@@ -263,7 +254,7 @@ public class HypermediaWeaverAgent extends ToolAgent {
         RemovedContainer rc = (RemovedContainer)ev;
         ContainerID cid = rc.getContainer();
 
-        if (!state.removeContainerID(new WebContainerID(cid, constructContainerIRI(cid)))) {
+        if (!state.removeContainerID(new WebContainerID(cid, httpEndpoint))) {
           logger.log(Logger.INFO, "Cannot remove container, container not found: "
               + cid.getName() + " " + cid.getAddress());
         } else {
@@ -279,8 +270,8 @@ public class HypermediaWeaverAgent extends ToolAgent {
 
         // ContainerID is null in case of foreign agents registered with the local AMS or virtual agents
         if (cid != null) {
-          WebContainerID webCID = new WebContainerID(cid, constructContainerIRI(cid));
-          WebAID webAID = new WebAID(ba.getAgent(), constructAgentIRI(cid, ba.getAgent()));
+          WebContainerID webCID = new WebContainerID(cid, httpEndpoint);
+          WebAID webAID = new WebAID(ba.getAgent(), webCID.getIRI());
           state.addAgentToContainer(webCID, webAID);
 
           logger.log(Logger.INFO, "Agent " + webAID + " born in container " + webCID);
@@ -293,8 +284,8 @@ public class HypermediaWeaverAgent extends ToolAgent {
 
         // ContainerID is null in case of foreign agents registered with the local AMS or virtual agents
         if (cid != null) {
-          WebContainerID webCID = new WebContainerID(cid, constructContainerIRI(cid));
-          WebAID webAID = new WebAID(da.getAgent(), constructAgentIRI(cid, da.getAgent()));
+          WebContainerID webCID = new WebContainerID(cid, httpEndpoint);
+          WebAID webAID = new WebAID(da.getAgent(), webCID.getIRI());
           state.removeAgentFromContainer(webCID, webAID);
 
           logger.log(Logger.INFO, "Agent " + webAID + " killed in container " + webCID);

@@ -1,6 +1,7 @@
 package org.hyperagents.jade.graphs;
 
 import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.hyperagents.jade.platform.PlatformState;
@@ -25,18 +26,16 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
    * @param agentID the identifier of the JADE agent
    */
   public AgentGraphBuilder(WebAID agentID) {
-    super(agentID.getEndpoint());
+    super(agentID.getIRI());
 
     this.agentID = agentID;
 
-    graphBuilder.add(getDocumentIRI(), RDF.TYPE, rdf.createIRI(FIPA.AgentIdentifier));
-    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, rdf.createIRI(FIPA.Agent));
-    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, rdf.createIRI(STNCore.Agent));
+    graphBuilder.add(getDocumentIRI(), RDF.TYPE, FIPA.AgentIdentifier);
+    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, FIPA.Agent);
+    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, STNCore.Agent);
+    graphBuilder.add(getDocumentIRI(), FIPA.identifierOf, rdf.createIRI(agentID.getAgentIRI()));
 
-    WebAPDescription apDesc = PlatformState.getInstance().getAPDescription();
-    graphBuilder.add(agentID.getAgentIRI(), rdf.createIRI(FIPA.hostedBy),
-        rdf.createIRI(apDesc.getEndpoint()));
-
+    graphBuilder.setNamespace(RDF.PREFIX, RDF.NAMESPACE);
     graphBuilder.setNamespace("stn-core", STNCore.PREFIX);
   }
 
@@ -45,8 +44,22 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
    * @return this instance of agent graph builder (fluid API)
    */
   public AgentGraphBuilder addMetadata() {
-    graphBuilder.add(agentID.getAgentIRI(), rdf.createIRI(FIPA.name), agentID.getName());
-    graphBuilder.add(agentID.getAgentIRI(), rdf.createIRI(JADE.localName), agentID.getLocalName());
+    graphBuilder.add(agentID.getAgentIRI(), FIPA.name, agentID.getName());
+    graphBuilder.add(agentID.getAgentIRI(), JADE.localName, agentID.getLocalName());
+
+    PlatformState state = PlatformState.getInstance();
+    String mainEndpoint  = state.getMainContainerEndpoint();
+    WebAPDescription apDesc = state.getAPDescription();
+
+    if (apDesc != null) {
+      if (mainEndpoint != null) {
+        apDesc = new WebAPDescription(apDesc.getApDescription(), mainEndpoint);
+      }
+      graphBuilder.add(agentID.getAgentIRI(), FIPA.hostedBy, rdf.createIRI(apDesc.getPlatformIRI()));
+    }
+    graphBuilder.add(agentID.getAgentIRI(), FIPA.homeAgentPlatform, agentID.getAID().getHap());
+    graphBuilder.add(agentID.getAgentIRI(), FIPA.homeContainer,
+        rdf.createIRI(agentID.getContainerIRI()));
 
     return this;
   }
@@ -75,10 +88,10 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
     return addOrderedList(FIPA.resolvers, agentID.getAllResolvers());
   }
 
-  private AgentGraphBuilder addOrderedList(String property, Iterator<String> list) {
+  private AgentGraphBuilder addOrderedList(IRI property, Iterator<String> list) {
     if (list.hasNext()) {
       BNode listNode = rdf.createBNode();
-      graphBuilder.add(agentID.getAgentIRI(), rdf.createIRI(property), listNode);
+      graphBuilder.add(agentID.getAgentIRI(), property, listNode);
 
       String head = list.next();
       addStringArrayAsList(listNode, head, list);
@@ -89,7 +102,7 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
 
   private void addStringArrayAsList(Resource subject, String head, Iterator<String> tail) {
     graphBuilder.add(subject, RDF.TYPE, RDF.LIST);
-    graphBuilder.add(subject, RDF.FIRST, head);
+    graphBuilder.add(subject, RDF.FIRST, rdf.createIRI(head));
 
     if (tail.hasNext()) {
       BNode rest = rdf.createBNode();

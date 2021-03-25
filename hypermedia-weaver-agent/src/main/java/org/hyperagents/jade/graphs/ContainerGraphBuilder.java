@@ -20,14 +20,14 @@ public class ContainerGraphBuilder extends EntityGraphBuilder {
    * @param containerID a identifier of the JADE container
    */
   public ContainerGraphBuilder(WebContainerID containerID) {
-    super(containerID.getEndpoint());
+    super(containerID.getIRI());
 
     this.containerID = containerID;
 
     if (containerID.isMain()) {
-      graphBuilder.add(getDocumentIRI(), RDF.TYPE, rdf.createIRI(JADE.MainContainer));
+      graphBuilder.add(getDocumentIRI(), RDF.TYPE, JADE.MainContainer);
     } else {
-      graphBuilder.add(getDocumentIRI(), RDF.TYPE, rdf.createIRI(JADE.Container));
+      graphBuilder.add(getDocumentIRI(), RDF.TYPE, JADE.Container);
     }
   }
 
