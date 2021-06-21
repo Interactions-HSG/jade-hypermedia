@@ -1,8 +1,11 @@
 package org.hyperagents.jade.graphs;
 
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.hyperagents.jade.platform.WebAID;
 import org.hyperagents.jade.platform.WebContainerID;
+import org.hyperagents.jade.vocabs.HyperAgents;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.util.Set;
@@ -12,6 +15,7 @@ import java.util.Set;
  */
 public class ContainerGraphBuilder extends EntityGraphBuilder {
   private final WebContainerID containerID;
+  private final IRI containerIRI;
 
   /**
    * Constructs a container graph builder. Unlike {@link PlatformGraphBuilder}, this builder uses as
@@ -23,16 +27,20 @@ public class ContainerGraphBuilder extends EntityGraphBuilder {
     super(containerID.getIRI());
 
     this.containerID = containerID;
+    this.containerIRI = rdf.createIRI(containerID.getContainerIRI());
+
+    graphBuilder.add(getDocumentIRI(), RDF.TYPE, HyperAgents.ResourceProfile);
+    graphBuilder.add(getDocumentIRI(), HyperAgents.describes, containerIRI);
 
     if (containerID.isMain()) {
-      graphBuilder.add(getDocumentIRI(), RDF.TYPE, JADE.MainContainer);
+      graphBuilder.add(containerIRI, RDF.TYPE, JADE.MainContainer);
     } else {
-      graphBuilder.add(getDocumentIRI(), RDF.TYPE, JADE.Container);
+      graphBuilder.add(containerIRI, RDF.TYPE, JADE.Container);
     }
   }
 
   public ContainerGraphBuilder addMetadata() {
-    graphBuilder.add(getDocumentIRI(), JADE.hasName, containerID.getName());
+    graphBuilder.add(containerIRI, DCTERMS.TITLE, containerID.getName());
     return this;
   }
 
@@ -43,7 +51,7 @@ public class ContainerGraphBuilder extends EntityGraphBuilder {
    */
   public ContainerGraphBuilder addAgents(Set<WebAID> agentIDs) {
     for (WebAID aid : agentIDs) {
-      graphBuilder.add(getDocumentIRI(), JADE.containsAgent, rdf.createIRI(aid.getAgentIRI()));
+      graphBuilder.add(containerIRI, HyperAgents.containsAgent, rdf.createIRI(aid.getAgentIRI()));
     }
 
     return this;

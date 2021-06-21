@@ -271,7 +271,7 @@ public class HypermediaWeaverAgent extends ToolAgent {
         // ContainerID is null in case of foreign agents registered with the local AMS or virtual agents
         if (cid != null) {
           WebContainerID webCID = new WebContainerID(cid, httpEndpoint);
-          WebAID webAID = new WebAID(ba.getAgent(), webCID.getIRI());
+          WebAID webAID = new WebAID(ba.getAgent(), webCID);
           state.addAgentToContainer(webCID, webAID);
 
           logger.log(Logger.INFO, "Agent " + webAID + " born in container " + webCID);
@@ -285,7 +285,7 @@ public class HypermediaWeaverAgent extends ToolAgent {
         // ContainerID is null in case of foreign agents registered with the local AMS or virtual agents
         if (cid != null) {
           WebContainerID webCID = new WebContainerID(cid, httpEndpoint);
-          WebAID webAID = new WebAID(da.getAgent(), webCID.getIRI());
+          WebAID webAID = new WebAID(da.getAgent(), webCID);
           state.removeAgentFromContainer(webCID, webAID);
 
           logger.log(Logger.INFO, "Agent " + webAID + " killed in container " + webCID);

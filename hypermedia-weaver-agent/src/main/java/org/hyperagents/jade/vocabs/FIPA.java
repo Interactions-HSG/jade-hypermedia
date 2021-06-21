@@ -5,7 +5,9 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class FIPA {
-  public static final String PREFIX = "http://hyperagents.org/ns/fipa#";
+  public static final String PREFIX = "http://ns.hyperagents.org/fipa#";
+  public static final String MTP_HTTP_STD = "fipa.mts.mtp.http.std";
+  public static final String MTP_IIOP_STD = "fipa.mts.mtp.iiop.std";
 
   private static IRI createIRI(String term) {
     ValueFactory rdf = SimpleValueFactory.getInstance();
@@ -14,10 +16,14 @@ public class FIPA {
 
   /* Classes */
   // The following terms are defined in: http://fipa.org/specs/fipa00023/SC00023K.html#_Toc75951010
-  public static final IRI AgentIdentifier = createIRI("AgentIdentifier");
-  public static final IRI APDescription = createIRI("APDescription");
+  public static final IRI AgentIdentifierDescription = createIRI("AgentIdentifierDescription");
+  public static final IRI AgentPlatformDescription = createIRI("AgentPlatformDescription");
+  public static final IRI APService = createIRI("APService");
   // Non-standard terms:
   public static final IRI Agent = createIRI("Agent");
+  public static final IRI AgentPlatform = createIRI("AgentPlatform");
+  public static final IRI HTTPMessageTransportProtocol = createIRI("HTTPMessageTransportProtocol");
+  public static final IRI IIOPMessageTransportProtocol = createIRI("IIOPMessageTransportProtocol");
 
   /* Object properties */
   // The following terms are defined in: http://fipa.org/specs/fipa00023/SC00023K.html#_Toc75951010

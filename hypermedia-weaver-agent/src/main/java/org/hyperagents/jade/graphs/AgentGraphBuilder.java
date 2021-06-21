@@ -8,8 +8,8 @@ import org.hyperagents.jade.platform.PlatformState;
 import org.hyperagents.jade.platform.WebAID;
 import org.hyperagents.jade.platform.WebAPDescription;
 import org.hyperagents.jade.vocabs.FIPA;
+import org.hyperagents.jade.vocabs.HyperAgents;
 import org.hyperagents.jade.vocabs.JADE;
-import org.hyperagents.jade.vocabs.STNCore;
 
 import java.util.Iterator;
 
@@ -30,13 +30,15 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
 
     this.agentID = agentID;
 
-    graphBuilder.add(getDocumentIRI(), RDF.TYPE, FIPA.AgentIdentifier);
-    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, FIPA.Agent);
-    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, STNCore.Agent);
-    graphBuilder.add(getDocumentIRI(), FIPA.identifierOf, rdf.createIRI(agentID.getAgentIRI()));
+    graphBuilder.add(getDocumentIRI(), RDF.TYPE, FIPA.AgentIdentifierDescription);
+    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, HyperAgents.Agent);
+    graphBuilder.add(getDocumentIRI(), HyperAgents.describes, rdf.createIRI(agentID.getAgentIRI()));
 
-    graphBuilder.setNamespace(RDF.PREFIX, RDF.NAMESPACE);
-    graphBuilder.setNamespace("stn-core", STNCore.PREFIX);
+    if (agentID.getAllAddresses().hasNext() || agentID.getAllResolvers().hasNext()) {
+      graphBuilder.setNamespace(RDF.PREFIX, RDF.NAMESPACE);
+    }
+
+    graphBuilder.setNamespace("fipa", FIPA.PREFIX);
   }
 
   /**
@@ -59,7 +61,7 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
     }
     graphBuilder.add(agentID.getAgentIRI(), FIPA.homeAgentPlatform, agentID.getAID().getHap());
     graphBuilder.add(agentID.getAgentIRI(), FIPA.homeContainer,
-        rdf.createIRI(agentID.getContainerIRI()));
+      rdf.createIRI(agentID.getContainerIRI()));
 
     return this;
   }
@@ -91,7 +93,7 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
   private AgentGraphBuilder addOrderedList(IRI property, Iterator<String> list) {
     if (list.hasNext()) {
       BNode listNode = rdf.createBNode();
-      graphBuilder.add(agentID.getAgentIRI(), property, listNode);
+      graphBuilder.add(getDocumentIRI(), property, listNode);
 
       String head = list.next();
       addStringArrayAsList(listNode, head, list);

@@ -7,10 +7,10 @@ public class WebAID extends WebWrapper {
   private final AID agentID;
   private final String containerIRI;
 
-  public WebAID(AID agentID, String containerIRI) {
-    super(containerIRI + "agents/" + agentID.getLocalName());
+  public WebAID(AID agentID, WebContainerID webCID) {
+    super(webCID.getIRI() + "agents/" + agentID.getLocalName());
     this.agentID = agentID;
-    this.containerIRI = containerIRI;
+    this.containerIRI = webCID.getContainerIRI();
   }
 
   public String getAgentIRI() {

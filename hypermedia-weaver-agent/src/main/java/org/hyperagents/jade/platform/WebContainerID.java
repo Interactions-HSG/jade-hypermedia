@@ -10,6 +10,10 @@ public class WebContainerID extends WebWrapper {
     this.containerID = containerID;
   }
 
+  public String getContainerIRI() {
+    return getIRI() + "#container";
+  }
+
   public String getName() {
     return containerID.getName();
   }

@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.hyperagents.jade.platform.WebAPDescription;
 import org.hyperagents.jade.platform.WebContainerID;
 import org.hyperagents.jade.vocabs.FIPA;
+import org.hyperagents.jade.vocabs.HyperAgents;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.util.Iterator;
@@ -27,8 +28,8 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
 
     apDesc = platformDescription;
 
-    graphBuilder.add(getDocumentIRI(), RDF.TYPE, FIPA.APDescription);
-    graphBuilder.add(getDocumentIRI(), FIPA.descriptionOf, rdf.createIRI(apDesc.getPlatformIRI()));
+    graphBuilder.add(getDocumentIRI(), RDF.TYPE, FIPA.AgentPlatformDescription);
+    graphBuilder.add(getDocumentIRI(), HyperAgents.describes, rdf.createIRI(apDesc.getPlatformIRI()));
   }
 
   /**
@@ -36,7 +37,10 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
    * @return this instance of platform graph builder (fluid API)
    */
   public PlatformGraphBuilder addMetadata() {
-    graphBuilder.add(apDesc.getPlatformIRI(), FIPA.name, apDesc.getName());
+    // The string encoding the platform name may come with leading and trailing double quotes
+    graphBuilder.add(apDesc.getPlatformIRI(), RDF.TYPE, FIPA.AgentPlatform);
+    graphBuilder.add(apDesc.getPlatformIRI(), FIPA.name, apDesc.getName().replaceAll("^\"|\"$", ""));
+
     return this;
   }
 
@@ -53,7 +57,14 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
     while (services.hasNext()) {
       APService service = services.next();
       BNode serviceNode = rdf.createBNode();
-      graphBuilder.add(apDesc.getPlatformIRI(), FIPA.apService, serviceNode);
+
+      BNode signifierNode = rdf.createBNode();
+      graphBuilder.add(getDocumentIRI(), HyperAgents.hasSignifier, signifierNode);
+      graphBuilder.add(signifierNode, RDF.TYPE, HyperAgents.Signifier);
+      graphBuilder.add(signifierNode, HyperAgents.describes, serviceNode);
+
+      graphBuilder.setNamespace("fipa", FIPA.PREFIX);
+
       addAPService(serviceNode, service);
     }
 
@@ -70,10 +81,10 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
     for (WebContainerID cid : containerIDs) {
       if (cid.isMain()) {
         LOGGER.info("Adding triple for container: " + cid.getIRI());
-        graphBuilder.add(apDesc.getPlatformIRI(), JADE.hasMainContainer, rdf.createIRI(cid.getIRI()));
+        graphBuilder.add(apDesc.getPlatformIRI(), JADE.hostsMainContainer, rdf.createIRI(cid.getIRI()));
       } else {
         LOGGER.info("Adding triple for container: " + cid.getIRI());
-        graphBuilder.add(apDesc.getPlatformIRI(), JADE.hasContainer, rdf.createIRI(cid.getIRI()));
+        graphBuilder.add(apDesc.getPlatformIRI(), JADE.hostsContainer, rdf.createIRI(cid.getIRI()));
       }
     }
 
@@ -81,8 +92,19 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
   }
 
   private void addAPService(Resource serviceNode, APService service) {
+    graphBuilder.add(serviceNode, RDF.TYPE, FIPA.APService);
     graphBuilder.add(serviceNode, FIPA.name, service.getName());
-    graphBuilder.add(serviceNode, FIPA.type, service.getType());
+
+    // Check the service type for the two standard values defined by the <a
+    // href="http://fipa.org/specs/fipa00067/SC00067F.html">FIPA Agent Message Transport Service
+    // Specfication</a>
+    if (service.getType().equalsIgnoreCase(FIPA.MTP_HTTP_STD)) {
+      graphBuilder.add(serviceNode, FIPA.type, FIPA.HTTPMessageTransportProtocol);
+    } else if (service.getType().equalsIgnoreCase(FIPA.MTP_IIOP_STD)) {
+      graphBuilder.add(serviceNode, FIPA.type, FIPA.IIOPMessageTransportProtocol);
+    } else {
+      graphBuilder.add(serviceNode, FIPA.type, service.getType());
+    }
 
     @SuppressWarnings("unchecked")
     Iterator<String> iterator = service.getAllAddresses();
