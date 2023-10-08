@@ -50,7 +50,7 @@ public abstract class EntityGraphBuilder {
   public String write(RDFFormat format) {
     OutputStream out = new ByteArrayOutputStream();
 
-    graphBuilder.setNamespace("hyper", HyperAgents.PREFIX);
+    graphBuilder.setNamespace("hmas", HyperAgents.PREFIX);
     graphBuilder.setNamespace("jade", JADE.PREFIX);
     graphBuilder.setNamespace("dct", DCTERMS.NAMESPACE);
 

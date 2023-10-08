@@ -22,8 +22,8 @@ public class FIPA {
   // Non-standard terms:
   public static final IRI Agent = createIRI("Agent");
   public static final IRI AgentPlatform = createIRI("AgentPlatform");
-  public static final IRI HTTPMessageTransportProtocol = createIRI("HTTPMessageTransportProtocol");
-  public static final IRI IIOPMessageTransportProtocol = createIRI("IIOPMessageTransportProtocol");
+  public static final IRI HTTPMessageTransportService = createIRI("HTTPMessageTransportService");
+  public static final IRI IIOPMessageTransportService = createIRI("IIOPMessageTransportService");
 
   /* Object properties */
   // The following terms are defined in: http://fipa.org/specs/fipa00023/SC00023K.html#_Toc75951010
@@ -39,6 +39,6 @@ public class FIPA {
   public static final IRI homeContainer = createIRI("homeContainer");
 
   /* Data properties */
-  public static final IRI name = createIRI("name");
-  public static final IRI type = createIRI("type");
+  public static final IRI serviceName = createIRI("serviceName");
+  public static final IRI serviceType = createIRI("serviceType");
 }

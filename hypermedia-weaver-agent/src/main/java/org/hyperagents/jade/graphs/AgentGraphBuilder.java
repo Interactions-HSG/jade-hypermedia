@@ -46,7 +46,7 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
    * @return this instance of agent graph builder (fluid API)
    */
   public AgentGraphBuilder addMetadata() {
-    graphBuilder.add(agentID.getAgentIRI(), FIPA.name, agentID.getName());
+    graphBuilder.add(agentID.getAgentIRI(), FIPA.serviceName, agentID.getName());
     graphBuilder.add(agentID.getAgentIRI(), JADE.localName, agentID.getLocalName());
 
     PlatformState state = PlatformState.getInstance();

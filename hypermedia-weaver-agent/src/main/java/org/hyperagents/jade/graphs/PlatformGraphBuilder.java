@@ -39,7 +39,7 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
   public PlatformGraphBuilder addMetadata() {
     // The string encoding the platform name may come with leading and trailing double quotes
     graphBuilder.add(apDesc.getPlatformIRI(), RDF.TYPE, FIPA.AgentPlatform);
-    graphBuilder.add(apDesc.getPlatformIRI(), FIPA.name, apDesc.getName().replaceAll("^\"|\"$", ""));
+    graphBuilder.add(apDesc.getPlatformIRI(), FIPA.serviceName, apDesc.getName().replaceAll("^\"|\"$", ""));
 
     return this;
   }
@@ -93,17 +93,17 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
 
   private void addAPService(Resource serviceNode, APService service) {
     graphBuilder.add(serviceNode, RDF.TYPE, FIPA.APService);
-    graphBuilder.add(serviceNode, FIPA.name, service.getName());
+    graphBuilder.add(serviceNode, FIPA.serviceName, service.getName());
 
     // Check the service type for the two standard values defined by the <a
     // href="http://fipa.org/specs/fipa00067/SC00067F.html">FIPA Agent Message Transport Service
     // Specfication</a>
     if (service.getType().equalsIgnoreCase(FIPA.MTP_HTTP_STD)) {
-      graphBuilder.add(serviceNode, FIPA.type, FIPA.HTTPMessageTransportProtocol);
+      graphBuilder.add(serviceNode, FIPA.serviceType, FIPA.HTTPMessageTransportService);
     } else if (service.getType().equalsIgnoreCase(FIPA.MTP_IIOP_STD)) {
-      graphBuilder.add(serviceNode, FIPA.type, FIPA.IIOPMessageTransportProtocol);
+      graphBuilder.add(serviceNode, FIPA.serviceType, FIPA.IIOPMessageTransportService);
     } else {
-      graphBuilder.add(serviceNode, FIPA.type, service.getType());
+      graphBuilder.add(serviceNode, FIPA.serviceType, service.getType());
     }
 
     @SuppressWarnings("unchecked")
