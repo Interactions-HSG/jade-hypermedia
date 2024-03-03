@@ -8,7 +8,7 @@ import org.hyperagents.jade.platform.PlatformState;
 import org.hyperagents.jade.platform.WebAID;
 import org.hyperagents.jade.platform.WebAPDescription;
 import org.hyperagents.jade.vocabs.FIPA;
-import org.hyperagents.jade.vocabs.HyperAgents;
+import org.hyperagents.jade.vocabs.HMAS;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.util.Iterator;
@@ -30,9 +30,15 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
 
     this.agentID = agentID;
 
+    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, HMAS.Agent);
+
+    graphBuilder.add(getDocumentIRI(), RDF.TYPE, HMAS.ResourceProfile);
     graphBuilder.add(getDocumentIRI(), RDF.TYPE, FIPA.AgentIdentifierDescription);
-    graphBuilder.add(agentID.getAgentIRI(), RDF.TYPE, HyperAgents.Agent);
-    graphBuilder.add(getDocumentIRI(), HyperAgents.describes, rdf.createIRI(agentID.getAgentIRI()));
+
+    graphBuilder.add(agentID.getAgentIRI(), HMAS.hasProfile, getDocumentIRI());
+    graphBuilder.add(getDocumentIRI(), HMAS.isProfileOf, rdf.createIRI(agentID.getAgentIRI()));
+
+    graphBuilder.add(getDocumentIRI(), HMAS.exposesSignifiersFrom, JADE.JadeMessagingCatalog);
 
     if (agentID.getAllAddresses().hasNext() || agentID.getAllResolvers().hasNext()) {
       graphBuilder.setNamespace(RDF.PREFIX, RDF.NAMESPACE);
@@ -57,8 +63,11 @@ public class AgentGraphBuilder extends EntityGraphBuilder {
       if (mainEndpoint != null) {
         apDesc = new WebAPDescription(apDesc.getApDescription(), mainEndpoint);
       }
-      graphBuilder.add(agentID.getAgentIRI(), FIPA.hostedBy, rdf.createIRI(apDesc.getPlatformIRI()));
+      graphBuilder.add(agentID.getAgentIRI(), HMAS.isHostedOn, rdf.createIRI(apDesc.getPlatformIRI()));
     }
+
+    graphBuilder.add(agentID.getAgentIRI(), HMAS.isContainedIn, rdf.createIRI(agentID.getContainerIRI()));
+
     graphBuilder.add(agentID.getAgentIRI(), FIPA.homeAgentPlatform, agentID.getAID().getHap());
     graphBuilder.add(agentID.getAgentIRI(), FIPA.homeContainer,
       rdf.createIRI(agentID.getContainerIRI()));

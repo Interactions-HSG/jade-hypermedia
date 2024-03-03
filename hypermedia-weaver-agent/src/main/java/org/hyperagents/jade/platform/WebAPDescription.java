@@ -11,6 +11,10 @@ public class WebAPDescription extends WebWrapper {
     this.apDescription = apDescription;
   }
 
+  public String getIRI() {
+    return super.getIRI();
+  }
+
   public String getPlatformIRI() {
     return getIRI() + "#platform";
   }

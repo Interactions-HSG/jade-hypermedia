@@ -5,7 +5,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public final class JADE {
-  public static final String PREFIX = "http://ns.hyperagents.org/jade#";
+  public static final String PREFIX = "https://purl.org/hmas/jade#";
 
   private static IRI createIRI(String term) {
     ValueFactory rdf = SimpleValueFactory.getInstance();
@@ -15,6 +15,8 @@ public final class JADE {
   /* Classes */
   public static final IRI MainContainer = createIRI("MainContainer");
   public static final IRI Container = createIRI("Container");
+
+  public static final IRI JadeMessagingCatalog = createIRI("JadeMessagingCatalog");
 
   public static final IRI AgentManagementSystem = createIRI("AgentManagementSystem");
   public static final IRI DirectoryFacilitator = createIRI("DirectoryFacilitator");

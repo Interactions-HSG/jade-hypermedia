@@ -7,7 +7,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.hyperagents.jade.platform.WebAPDescription;
 import org.hyperagents.jade.platform.WebContainerID;
 import org.hyperagents.jade.vocabs.FIPA;
-import org.hyperagents.jade.vocabs.HyperAgents;
+import org.hyperagents.jade.vocabs.HMAS;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.util.Iterator;
@@ -28,8 +28,10 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
 
     apDesc = platformDescription;
 
-    graphBuilder.add(getDocumentIRI(), RDF.TYPE, FIPA.AgentPlatformDescription);
-    graphBuilder.add(getDocumentIRI(), HyperAgents.describes, rdf.createIRI(apDesc.getPlatformIRI()));
+    graphBuilder.add(getDocumentIRI(), RDF.TYPE, HMAS.ResourceProfile);
+    graphBuilder.add(getDocumentIRI(), HMAS.isProfileOf, rdf.createIRI(apDesc.getPlatformIRI()));
+    graphBuilder.add(getDocumentIRI(), HMAS.exposesSignifiersFrom, JADE.JadeMessagingCatalog);
+    graphBuilder.add(getDocumentIRI(), HMAS.globalSpecification, HMAS.AuthorizationHeader);
   }
 
   /**
@@ -38,7 +40,8 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
    */
   public PlatformGraphBuilder addMetadata() {
     // The string encoding the platform name may come with leading and trailing double quotes
-    graphBuilder.add(apDesc.getPlatformIRI(), RDF.TYPE, FIPA.AgentPlatform);
+    graphBuilder.add(apDesc.getPlatformIRI(), RDF.TYPE, HMAS.HypermediaMASPlatform);
+    graphBuilder.add(apDesc.getPlatformIRI(), HMAS.hasProfile, rdf.createIRI(apDesc.getIRI()));
     graphBuilder.add(apDesc.getPlatformIRI(), FIPA.serviceName, apDesc.getName().replaceAll("^\"|\"$", ""));
 
     return this;
@@ -59,9 +62,9 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
       BNode serviceNode = rdf.createBNode();
 
       BNode signifierNode = rdf.createBNode();
-      graphBuilder.add(getDocumentIRI(), HyperAgents.hasSignifier, signifierNode);
-      graphBuilder.add(signifierNode, RDF.TYPE, HyperAgents.Signifier);
-      graphBuilder.add(signifierNode, HyperAgents.describes, serviceNode);
+      graphBuilder.add(getDocumentIRI(), HMAS.hasSignifier, signifierNode);
+      graphBuilder.add(signifierNode, RDF.TYPE, HMAS.Signifier);
+      graphBuilder.add(signifierNode, HMAS.isProfileOf, serviceNode);
 
       graphBuilder.setNamespace("fipa", FIPA.PREFIX);
 
@@ -79,12 +82,11 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
   public PlatformGraphBuilder addContainers(Set<WebContainerID> containerIDs) {
     // Add containment triples from main-container to all containers
     for (WebContainerID cid : containerIDs) {
+      LOGGER.info("Adding triple for container: " + cid.getIRI());
+      graphBuilder.add(apDesc.getPlatformIRI(), HMAS.contains, rdf.createIRI(cid.getIRI()));
+
       if (cid.isMain()) {
-        LOGGER.info("Adding triple for container: " + cid.getIRI());
-        graphBuilder.add(apDesc.getPlatformIRI(), JADE.hostsMainContainer, rdf.createIRI(cid.getIRI()));
-      } else {
-        LOGGER.info("Adding triple for container: " + cid.getIRI());
-        graphBuilder.add(apDesc.getPlatformIRI(), JADE.hostsContainer, rdf.createIRI(cid.getIRI()));
+        graphBuilder.add(rdf.createIRI(cid.getIRI()), RDF.TYPE, JADE.MainContainer);
       }
     }
 

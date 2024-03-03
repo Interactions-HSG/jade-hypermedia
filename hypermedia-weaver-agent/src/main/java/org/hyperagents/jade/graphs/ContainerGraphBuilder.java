@@ -3,9 +3,10 @@ package org.hyperagents.jade.graphs;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.hyperagents.jade.platform.PlatformState;
 import org.hyperagents.jade.platform.WebAID;
 import org.hyperagents.jade.platform.WebContainerID;
-import org.hyperagents.jade.vocabs.HyperAgents;
+import org.hyperagents.jade.vocabs.HMAS;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.util.Set;
@@ -29,18 +30,21 @@ public class ContainerGraphBuilder extends EntityGraphBuilder {
     this.containerID = containerID;
     this.containerIRI = rdf.createIRI(containerID.getContainerIRI());
 
-    graphBuilder.add(getDocumentIRI(), RDF.TYPE, HyperAgents.ResourceProfile);
-    graphBuilder.add(getDocumentIRI(), HyperAgents.describes, containerIRI);
+    graphBuilder.add(getDocumentIRI(), RDF.TYPE, HMAS.ResourceProfile);
+    graphBuilder.add(getDocumentIRI(), HMAS.isProfileOf, containerIRI);
 
+    graphBuilder.add(containerIRI, RDF.TYPE, HMAS.Workspace);
     if (containerID.isMain()) {
       graphBuilder.add(containerIRI, RDF.TYPE, JADE.MainContainer);
-    } else {
-      graphBuilder.add(containerIRI, RDF.TYPE, JADE.Container);
     }
   }
 
   public ContainerGraphBuilder addMetadata() {
-    graphBuilder.add(containerIRI, DCTERMS.TITLE, containerID.getName());
+    graphBuilder.add(containerIRI, HMAS.hasProfile, getDocumentIRI());
+
+    String platformIRI = PlatformState.getInstance().getAPDescription().getPlatformIRI();
+    graphBuilder.add(containerIRI, HMAS.isHostedOn, rdf.createIRI(platformIRI));
+
     return this;
   }
 
@@ -51,7 +55,9 @@ public class ContainerGraphBuilder extends EntityGraphBuilder {
    */
   public ContainerGraphBuilder addAgents(Set<WebAID> agentIDs) {
     for (WebAID aid : agentIDs) {
-      graphBuilder.add(containerIRI, HyperAgents.containsAgent, rdf.createIRI(aid.getAgentIRI()));
+      IRI agentIRI = rdf.createIRI(aid.getAgentIRI());
+      graphBuilder.add(containerIRI, HMAS.contains, agentIRI);
+      graphBuilder.add(agentIRI, RDF.TYPE, HMAS.Agent);
     }
 
     return this;

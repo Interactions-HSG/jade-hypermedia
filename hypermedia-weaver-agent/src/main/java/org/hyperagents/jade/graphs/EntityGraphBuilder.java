@@ -10,7 +10,7 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
-import org.hyperagents.jade.vocabs.HyperAgents;
+import org.hyperagents.jade.vocabs.HMAS;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.io.ByteArrayOutputStream;
@@ -50,7 +50,7 @@ public abstract class EntityGraphBuilder {
   public String write(RDFFormat format) {
     OutputStream out = new ByteArrayOutputStream();
 
-    graphBuilder.setNamespace("hmas", HyperAgents.PREFIX);
+    graphBuilder.setNamespace("hmas", HMAS.PREFIX);
     graphBuilder.setNamespace("jade", JADE.PREFIX);
     graphBuilder.setNamespace("dct", DCTERMS.NAMESPACE);
 
