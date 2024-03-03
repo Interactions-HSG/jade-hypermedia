@@ -4,7 +4,6 @@ import jade.util.Logger;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
@@ -52,7 +51,6 @@ public abstract class EntityGraphBuilder {
 
     graphBuilder.setNamespace("hmas", HMAS.PREFIX);
     graphBuilder.setNamespace("jade", JADE.PREFIX);
-    graphBuilder.setNamespace("dct", DCTERMS.NAMESPACE);
 
     try (out) {
       Rio.write(graphBuilder.build(), out, format,
