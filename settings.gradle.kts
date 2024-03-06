@@ -8,4 +8,6 @@
  */
 
 rootProject.name = "jade-hypermedia"
+
 include("hypermedia-weaver-agent")
+includeBuild("hmas-java/")
