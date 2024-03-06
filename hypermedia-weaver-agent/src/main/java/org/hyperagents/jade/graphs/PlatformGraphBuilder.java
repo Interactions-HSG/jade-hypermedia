@@ -1,9 +1,14 @@
 package org.hyperagents.jade.graphs;
 
+import ch.unisg.ics.interactions.hmas.core.hostables.HypermediaMASPlatform;
+import ch.unisg.ics.interactions.hmas.core.hostables.Workspace;
+import ch.unisg.ics.interactions.hmas.interaction.io.ResourceProfileGraphWriter;
+import ch.unisg.ics.interactions.hmas.interaction.signifiers.ResourceProfile;
 import jade.domain.FIPAAgentManagement.APService;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.hyperagents.jade.platform.WebAPDescription;
 import org.hyperagents.jade.platform.WebContainerID;
 import org.hyperagents.jade.vocabs.FIPA;
@@ -19,6 +24,8 @@ import java.util.Set;
 public class PlatformGraphBuilder extends EntityGraphBuilder {
   private final WebAPDescription apDesc;
 
+  private HypermediaMASPlatform.Builder builder;
+
   /**
    * Constructs a platform graph builder.
    * @param platformDescription an agent platform description as defined by the JADE platform
@@ -28,10 +35,24 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
 
     apDesc = platformDescription;
 
-    graphBuilder.add(getDocumentIRI(), RDF.TYPE, HMAS.ResourceProfile);
-    graphBuilder.add(getDocumentIRI(), HMAS.isProfileOf, rdf.createIRI(apDesc.getPlatformIRI()));
-    graphBuilder.add(getDocumentIRI(), HMAS.exposesSignifiersFrom, JADE.JadeMessagingCatalog);
-    graphBuilder.add(getDocumentIRI(), HMAS.globalSpecification, HMAS.AuthorizationHeader);
+//    graphBuilder.add(getDocumentIRI(), RDF.TYPE, HMAS.ResourceProfile);
+//    graphBuilder.add(getDocumentIRI(), HMAS.isProfileOf, rdf.createIRI(apDesc.getPlatformIRI()));
+//    graphBuilder.add(getDocumentIRI(), HMAS.exposesSignifiersFrom, JADE.JadeMessagingCatalog);
+//    graphBuilder.add(getDocumentIRI(), HMAS.globalSpecification, HMAS.AuthorizationHeader);
+
+    builder = new HypermediaMASPlatform.Builder()
+      .setIRIAsString(apDesc.getPlatformIRI());
+  }
+
+  @Override
+  public String write(RDFFormat format) {
+    ResourceProfile profile = new ResourceProfile.Builder(builder.build())
+      .setIRIAsString(getDocumentIRI())
+      .build();
+
+    return new ResourceProfileGraphWriter(profile)
+      .setNamespace("jade", JADE.PREFIX)
+      .write();
   }
 
   /**
@@ -83,11 +104,17 @@ public class PlatformGraphBuilder extends EntityGraphBuilder {
     // Add containment triples from main-container to all containers
     for (WebContainerID cid : containerIDs) {
       LOGGER.info("Adding triple for container: " + cid.getIRI());
-      graphBuilder.add(apDesc.getPlatformIRI(), HMAS.contains, rdf.createIRI(cid.getIRI()));
+//      graphBuilder.add(apDesc.getPlatformIRI(), HMAS.contains, rdf.createIRI(cid.getIRI()));
+
+      Workspace.Builder wkspBuilder = new Workspace.Builder()
+        .setIRIAsString(cid.getContainerIRI());
 
       if (cid.isMain()) {
-        graphBuilder.add(rdf.createIRI(cid.getIRI()), RDF.TYPE, JADE.MainContainer);
+//        graphBuilder.add(rdf.createIRI(cid.getIRI()), RDF.TYPE, JADE.MainContainer);
+        wkspBuilder.addSemanticType(JADE.MainContainer.stringValue());
       }
+
+      builder.addHostedResource(wkspBuilder.build());
     }
 
     return this;
