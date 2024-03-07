@@ -9,7 +9,7 @@
 plugins {
   // Apply the java-library plugin for API and implementation separation.
   `java-library`
-  id("com.github.johnrengelman.shadow") version "5.1.0"
+  id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 repositories {
@@ -37,13 +37,13 @@ tasks {
   }
 
   task<JavaExec>("runMain") {
-    main = "jade.Boot"
+    mainClass = "jade.Boot"
     args = listOf("-conf", "main.properties", "-gui", "hwa:org.hyperagents.jade.HypermediaWeaverAgent")
     classpath = sourceSets["main"].runtimeClasspath
   }
 
   task<JavaExec>("runLocal") {
-    main = "jade.Boot"
+    mainClass = "jade.Boot"
     args = listOf("-container")
     classpath = files("src/main/resources/jade-4.5.0.jar")
   }
@@ -51,13 +51,13 @@ tasks {
   task<JavaExec>("runRemoteHWA") {
     val hwa = "hwa-" + System.currentTimeMillis() + ":org.hyperagents.jade.HypermediaWeaverAgent";
 
-    main = "jade.Boot"
+    mainClass = "jade.Boot"
     args = listOf("-container", "-conf", "peripheral.properties", hwa)
     classpath = sourceSets["main"].runtimeClasspath
   }
 
   task<JavaExec>("runRemote") {
-    main = "jade.Boot"
+    mainClass = "jade.Boot"
     args = listOf("-container", "-conf", "peripheral.properties")
     classpath = files("src/main/resources/jade-4.5.0.jar")
   }
