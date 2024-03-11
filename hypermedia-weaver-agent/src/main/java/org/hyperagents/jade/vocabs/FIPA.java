@@ -39,6 +39,7 @@ public class FIPA {
   public static final IRI homeContainer = createIRI("homeContainer");
 
   /* Data properties */
+  public static final IRI agentName = createIRI("agentName");
   public static final IRI serviceName = createIRI("serviceName");
   public static final IRI serviceType = createIRI("serviceType");
 }

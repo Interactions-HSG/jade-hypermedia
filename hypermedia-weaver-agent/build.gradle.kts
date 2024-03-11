@@ -25,6 +25,9 @@ dependencies {
   implementation(files("src/main/resources/jade-4.5.0.jar"))
   implementation("org.eclipse.jetty.aggregate:jetty-all:9.0.0.RC2")
   implementation("org.eclipse.rdf4j:rdf4j-runtime:3.6.1")
+  implementation("ch.unisg.ics.interactions.hmas:hmas-java:1.0-SNAPSHOT")
+  implementation("ch.unisg.ics.interactions.hmas:interaction:1.0-SNAPSHOT")
+  implementation("ch.unisg.ics.interactions.hmas:core:1.0-SNAPSHOT")
 }
 
 tasks {
