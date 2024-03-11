@@ -3,9 +3,14 @@ package org.hyperagents.jade.graphs;
 import ch.unisg.ics.interactions.hmas.core.hostables.Agent;
 import ch.unisg.ics.interactions.hmas.core.hostables.HypermediaMASPlatform;
 import ch.unisg.ics.interactions.hmas.core.hostables.ProfiledResource;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.hyperagents.jade.platform.PlatformState;
 import org.hyperagents.jade.platform.WebAID;
 import org.hyperagents.jade.platform.WebAPDescription;
+import org.hyperagents.jade.vocabs.FIPA;
+import org.hyperagents.jade.vocabs.HMAS;
+import org.hyperagents.jade.vocabs.JADE;
 
 /**
  * Constructs an <a href="https://purl.org/hmas/ResourceProfile">hmas:ResourceProfile</a> of a JADE agent.
@@ -39,9 +44,10 @@ public class AgentProfileBuilder extends ResourceProfileBuilder {
    * @return this instance of agent graph builder (fluid API)
    */
   public AgentProfileBuilder addMetadata() {
-    // TODO: add metadata once we can add triples via hmas-java
-//    graphBuilder.add(agentID.getAgentIRI(), FIPA.serviceName, agentID.getName());
-//    graphBuilder.add(agentID.getAgentIRI(), JADE.localName, agentID.getLocalName());
+    ValueFactory rdf = SimpleValueFactory.getInstance();
+
+    builder.addTriple(FIPA.agentName, rdf.createLiteral(agentID.getName()));
+    builder.addTriple(JADE.localName, rdf.createLiteral(agentID.getLocalName()));
 
     PlatformState state = PlatformState.getInstance();
     String mainEndpoint  = state.getMainContainerEndpoint();
@@ -56,13 +62,8 @@ public class AgentProfileBuilder extends ResourceProfileBuilder {
         .build());
     }
 
-    // TODO: hmas-java support needed!
-//    graphBuilder.add(agentID.getAgentIRI(), HMAS.isContainedIn, rdf.createIRI(agentID.getContainerIRI()));
-
-    // TODO: add this metadata once we can add the triples via hmas-java
-//    graphBuilder.add(agentID.getAgentIRI(), FIPA.homeAgentPlatform, agentID.getAID().getHap());
-//    graphBuilder.add(agentID.getAgentIRI(), FIPA.homeContainer,
-//      rdf.createIRI(agentID.getContainerIRI()));
+    builder.addTriple(FIPA.homeAgentPlatform, rdf.createLiteral(agentID.getAID().getHap()));
+    builder.addTriple(HMAS.isContainedIn, rdf.createIRI(agentID.getContainerIRI()));
 
     return this;
   }

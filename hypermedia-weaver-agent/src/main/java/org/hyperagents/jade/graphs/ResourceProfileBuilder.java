@@ -106,9 +106,10 @@ public abstract class ResourceProfileBuilder {
 //    }
 
       addSignifier(new Signifier.Builder(new ActionSpecification.Builder(form)
-        .addSemanticType(FIPA.HTTPMessageTransportService.toString())
-        .build())
-        .build());
+          .addSemanticType(FIPA.HTTPMessageTransportService.toString())
+          .build())
+        .build()
+      );
     }
 
     return this;

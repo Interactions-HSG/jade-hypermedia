@@ -4,8 +4,11 @@ import ch.unisg.ics.interactions.hmas.core.hostables.HypermediaMASPlatform;
 import ch.unisg.ics.interactions.hmas.core.hostables.ProfiledResource;
 import ch.unisg.ics.interactions.hmas.core.hostables.Workspace;
 import jade.domain.FIPAAgentManagement.APService;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.hyperagents.jade.platform.WebAPDescription;
 import org.hyperagents.jade.platform.WebContainerID;
+import org.hyperagents.jade.vocabs.FIPA;
 import org.hyperagents.jade.vocabs.JADE;
 
 import java.util.Iterator;
@@ -47,8 +50,10 @@ public class PlatformProfileBuilder extends ResourceProfileBuilder {
    */
   public PlatformProfileBuilder addMetadata() {
     // The string encoding the platform name may come with leading and trailing double quotes
-    // TODO: add once we update hmmas-java to support additional triples
-    //graphBuilder.add(apDesc.getPlatformIRI(), FIPA.serviceName, apDesc.getName().replaceAll("^\"|\"$", ""));
+    String serviceName = apDesc.getName().replaceAll("^\"|\"$", "");
+
+    ValueFactory rdf = SimpleValueFactory.getInstance();
+    builder.addTriple(FIPA.serviceName, rdf.createLiteral(serviceName));
 
     return this;
   }
