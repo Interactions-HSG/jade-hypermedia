@@ -1,28 +1,22 @@
 package org.hyperagents.jade;
 
-import ch.unisg.ics.interactions.hmas.core.hostables.HypermediaMASPlatform;
-import ch.unisg.ics.interactions.hmas.core.hostables.Workspace;
-import ch.unisg.ics.interactions.hmas.interaction.signifiers.ResourceProfile;
 import jade.util.Logger;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.hyperagents.jade.graphs.AgentGraphBuilder;
-import org.hyperagents.jade.graphs.ContainerGraphBuilder;
-import org.hyperagents.jade.graphs.PlatformGraphBuilder;
+import org.hyperagents.jade.graphs.AgentProfileBuilder;
+import org.hyperagents.jade.graphs.ContainerProfileBuilder;
+import org.hyperagents.jade.graphs.PlatformProfileBuilder;
 import org.hyperagents.jade.platform.PlatformState;
 import org.hyperagents.jade.platform.WebAID;
-import org.hyperagents.jade.platform.WebAPDescription;
 import org.hyperagents.jade.platform.WebContainerID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.Set;
 
 public class HypermediaInterface {
   private final static Logger LOGGER = Logger.getJADELogger(HypermediaInterface.class.getName());
@@ -72,28 +66,12 @@ public class HypermediaInterface {
             && baseRequest.getRequestURI().matches("/ap-description")) {
           baseRequest.setHandled(true);
 
-          PlatformGraphBuilder builder = new PlatformGraphBuilder(state.getAPDescription());
+          PlatformProfileBuilder builder = new PlatformProfileBuilder(state.getAPDescription());
 
           String responseBody = builder.addMetadata()
-//              .addAPServices()
+              .addAPServices()
               .addContainers(state.getContainerIDs())
-              .write(RDFFormat.TURTLE);
-
-//          WebAPDescription apDesc = state.getAPDescription();
-//
-//          HypermediaMASPlatform.Builder builder = new HypermediaMASPlatform.Builder()
-//            .setIRIAsString(apDesc.getPlatformIRI());
-//
-//          // add containers
-//          Set<WebContainerID> containerIDs = state.getContainerIDs();
-//
-//          for (WebContainerID cid : containerIDs) {
-//            LOGGER.info("Adding container: " + cid.getIRI());
-//
-//            builder.addHostedResource(new Workspace.Builder()
-//              .setIRIAsString(cid.getContainerIRI())
-//              .build());
-//          }
+              .write();
 
           response.setStatus(HttpServletResponse.SC_OK);
           response.setContentType(TURTLE_MEDIA_TYPE);
@@ -116,11 +94,11 @@ public class HypermediaInterface {
           Optional<WebContainerID> containerID = state.getContainerIDByName(containerName);
 
           if (containerID.isPresent()) {
-            ContainerGraphBuilder builder = new ContainerGraphBuilder(containerID.get());
+            ContainerProfileBuilder builder = new ContainerProfileBuilder(containerID.get());
 
             String responseBody = builder.addMetadata()
               .addAgents(state.getAgentsInContainer(containerID.get()))
-              .write(RDFFormat.TURTLE);
+              .write();
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType(TURTLE_MEDIA_TYPE);
@@ -162,12 +140,12 @@ public class HypermediaInterface {
               LOGGER.log(Logger.INFO, "Not able to retrieve description of " + agentName + " in "
                 + containerName + ": agent does not exist");
             } else {
-              AgentGraphBuilder builder = new AgentGraphBuilder(agentID.get());
+              AgentProfileBuilder builder = new AgentProfileBuilder(agentID.get());
 
               String responseBody = builder.addMetadata()
                   .addAddresses()
-                  .addResolvers()
-                  .write(RDFFormat.TURTLE);
+//                  .addResolvers()
+                  .write();
 
               response.setStatus(HttpServletResponse.SC_OK);
               response.setContentType(TURTLE_MEDIA_TYPE);
