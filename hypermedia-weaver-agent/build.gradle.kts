@@ -39,6 +39,13 @@ tasks {
     mergeServiceFiles()
   }
 
+  task<JavaExec>("runMarketplace") {
+    mainClass = "jade.Boot"
+    args = listOf("-conf", "main.properties", "-gui", "-container-name", "Market-Place",
+      "hwa:org.hyperagents.jade.HypermediaWeaverAgent;agent-ra:org.hyperagents.jade.CupConsumerAgent;agent-rb:org.hyperagents.jade.CupProducerAgent")
+    classpath = sourceSets["main"].runtimeClasspath
+  }
+
   task<JavaExec>("runMain") {
     mainClass = "jade.Boot"
     args = listOf("-conf", "main.properties", "-gui", "hwa:org.hyperagents.jade.HypermediaWeaverAgent")
