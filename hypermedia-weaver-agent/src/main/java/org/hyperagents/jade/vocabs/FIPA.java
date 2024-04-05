@@ -5,7 +5,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class FIPA {
-  public static final String PREFIX = "http://ns.hyperagents.org/fipa#";
+  public static final String PREFIX = "https://purl.org/hmas/demo/fipa/";
   public static final String MTP_HTTP_STD = "fipa.mts.mtp.http.std";
   public static final String MTP_IIOP_STD = "fipa.mts.mtp.iiop.std";
 
@@ -25,6 +25,13 @@ public class FIPA {
   public static final IRI HTTPMessageTransportService = createIRI("HTTPMessageTransportService");
   public static final IRI IIOPMessageTransportService = createIRI("IIOPMessageTransportService");
 
+  public static final IRI RequestInteractionProtocolEnactment = createIRI("RequestInteractionProtocolEnactment");
+  public static final IRI ACLMessage = createIRI("ACLMessage");
+  public static final IRI Language = createIRI("Language");
+  public static final IRI FIPASL = createIRI("FIPASL");
+  public static final IRI Performative = createIRI("Performative");
+  public static final IRI Request = createIRI("Request");
+
   /* Object properties */
   // The following terms are defined in: http://fipa.org/specs/fipa00023/SC00023K.html#_Toc75951010
   public static final IRI addresses = createIRI("addresses");
@@ -42,4 +49,10 @@ public class FIPA {
   public static final IRI agentName = createIRI("agentName");
   public static final IRI serviceName = createIRI("serviceName");
   public static final IRI serviceType = createIRI("serviceType");
+
+  public static final IRI hasSender = createIRI("hasSender");
+  public static final IRI hasReceiver = createIRI("hasReceiver");
+  public static final IRI hasContent = createIRI("hasContent");
+  public static final IRI hasLanguage = createIRI("hasLanguage");
+  public static final IRI hasPerformative = createIRI("hasPerformative");
 }

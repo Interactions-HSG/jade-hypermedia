@@ -42,7 +42,6 @@ public abstract class ResourceProfileBuilder {
   public String write() {
     ResourceProfile profile = new ResourceProfile.Builder(build())
       .setIRIAsString(getDocumentIRI())
-      .addSemanticType(FIPA.AgentIdentifierDescription.toString())
       .exposeSignifiers(signifiers)
       .build();
 

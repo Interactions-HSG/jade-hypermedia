@@ -1,5 +1,9 @@
 package org.hyperagents.jade;
 
+import jade.core.Agent;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAException;
 import jade.util.Logger;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Request;
@@ -23,8 +27,10 @@ public class HypermediaInterface {
   private final static String TURTLE_MEDIA_TYPE = "text/turtle;charset=UTF-8";
 
   private final Server server;
+  private final Agent weaver;
 
-  public HypermediaInterface(int httpPort) {
+  public HypermediaInterface(Agent hwa, int httpPort) {
+    weaver = hwa;
     server = new Server(httpPort);
     HandlerList list = createHandlerList();
     server.setHandler(list);
@@ -140,11 +146,26 @@ public class HypermediaInterface {
               LOGGER.log(Logger.INFO, "Not able to retrieve description of " + agentName + " in "
                 + containerName + ": agent does not exist");
             } else {
-              AgentProfileBuilder builder = new AgentProfileBuilder(agentID.get());
+              DFAgentDescription agentDFD = null;
+              DFAgentDescription template = new DFAgentDescription();
+              template.setName(agentID.get().getAID());
+
+              try {
+                DFAgentDescription[] results = DFService.search(weaver, template);
+
+                if (results != null && results.length == 1) {
+                   agentDFD = results[0];
+                }
+              } catch (FIPAException e) {
+                  throw new RuntimeException(e);
+              }
+
+              AgentProfileBuilder builder = new AgentProfileBuilder(agentID.get(), agentDFD);
 
               String responseBody = builder.addMetadata()
                   .addAddresses()
 //                  .addResolvers()
+                  .addProtocolSignifiers()
                   .write();
 
               response.setStatus(HttpServletResponse.SC_OK);

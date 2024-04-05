@@ -17,10 +17,7 @@ import org.hyperagents.jade.platform.WebAID;
 import org.hyperagents.jade.platform.WebAPDescription;
 import org.hyperagents.jade.platform.WebContainerID;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.*;
 
 /**
@@ -35,10 +32,11 @@ public class HypermediaWeaverAgent extends ToolAgent {
   private static final String HYPERMEDIA_DEFAULT_PROTOCOL = "http";
   private static final int HYPERMEDIA_DEFAULT_PORT = 3000;
 
-  private String httpHost;
   private int httpPort;
   private String httpEndpoint;
   private HypermediaInterface hypermediaService;
+
+  private String localHost;
 
   private Map<String, Set<ContainerID>> pendingContainers;
   private Map<String, String> hTable;
@@ -82,13 +80,13 @@ public class HypermediaWeaverAgent extends ToolAgent {
 
     // Read initialization parameters
     Properties config = getBootProperties();
-    httpHost = config.getProperty("local-host", "localhost");
+    localHost = config.getProperty("local-host", "localhost");
     String port = config.getProperty("http-port", String.valueOf(HYPERMEDIA_DEFAULT_PORT));
 
     try {
       httpPort = Integer.parseInt(port);
       // Start hypermedia service
-      hypermediaService = new HypermediaInterface(httpPort);
+      hypermediaService = new HypermediaInterface(this, httpPort);
       hypermediaService.start();
     } catch (NumberFormatException e) {
       logger.log(Logger.SEVERE, "Trying default HTTP port, provided port is not a valid number: "
@@ -98,7 +96,8 @@ public class HypermediaWeaverAgent extends ToolAgent {
       logger.log(Logger.SEVERE, "Starting the HTTP server failed: " + e.getMessage());
     }
 
-    httpEndpoint = HYPERMEDIA_DEFAULT_PROTOCOL + "://" + httpHost + ":" + httpPort + "/";
+    httpEndpoint = config.getProperty("http-endpoint",
+      HYPERMEDIA_DEFAULT_PROTOCOL + "://" + localHost + ":" + httpPort + "/");
   }
 
   private void registerWithDF() {
@@ -106,7 +105,7 @@ public class HypermediaWeaverAgent extends ToolAgent {
 
     try {
       DFService.register(this, dfd);
-      logger.log(Logger.INFO, "Registered hypermedia service with DF for " + httpHost);
+      logger.log(Logger.INFO, "Registered hypermedia service with DF for " + localHost);
     } catch (FIPAException e) {
       logger.log(Logger.SEVERE, "Unable to register " + HYPERMEDIA_SERVICE + " with the DF: "
         + e.getMessage());
@@ -119,7 +118,7 @@ public class HypermediaWeaverAgent extends ToolAgent {
     if (weavers != null && weavers.length > 0) {
       ACLMessage inform = new ACLMessage(ACLMessage.INFORM);
       inform.setConversationId(HYPERMEDIA_SERVICE);
-      inform.setContent(HYPERMEDIA_DEFAULT_PROTOCOL + ":" + httpHost + ":" + httpPort);
+      inform.setContent(httpEndpoint);
 
       for (DFAgentDescription weaver : weavers) {
         if (weaver.getName() != getAID()) {
@@ -175,18 +174,22 @@ public class HypermediaWeaverAgent extends ToolAgent {
 
       if (message != null) {
         if (message.getPerformative() == ACLMessage.INFORM) {
-          // Content format is protocol:address:port
-          String[] payload = message.getContent().split(":");
-          String address = payload[1];
-          String endpoint = payload[0] + "://" + address + ":" + payload[2] + "/";
+          String endpoint = message.getContent();
 
           logger.info("Discovered new weaver: " + message.getSender().getName()
               + " for endpoint " + endpoint);
 
-          // Keep track of the discovered endpoints
-          hTable.put(address, endpoint);
-          // Check any known containers for this endpoint
-          checkPendingContainers(address, endpoint);
+          try {
+            URI uri = new URI(endpoint);
+            String address = uri.getHost();
+
+            // Keep track of the discovered endpoints
+            hTable.put(address, endpoint);
+            // Check any known containers for this endpoint
+            checkPendingContainers(address, endpoint);
+          } catch (URISyntaxException e) {
+              throw new RuntimeException(e);
+          }
         }
       } else {
         block();
@@ -227,7 +230,7 @@ public class HypermediaWeaverAgent extends ToolAgent {
 
         // Check if this is a local container
         String containerAddress = cid.getAddress();
-        if (isLocalAddress(containerAddress) || containerAddress.equalsIgnoreCase(httpHost)) {
+        if (isLocalAddress(containerAddress) || containerAddress.equalsIgnoreCase(localHost)) {
           logger.info("Exposing local container: " + cid);
           exposeContainerID(cid);
         } else {

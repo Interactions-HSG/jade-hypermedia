@@ -2,9 +2,10 @@ package org.hyperagents.jade;
 
 import jade.core.AID;
 import jade.core.Agent;
-import jade.domain.FIPAAgentManagement.FailureException;
-import jade.domain.FIPAAgentManagement.NotUnderstoodException;
-import jade.domain.FIPAAgentManagement.RefuseException;
+import jade.domain.AMSService;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.*;
+import jade.domain.FIPAException;
 import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -23,8 +24,18 @@ public class CupConsumerAgent extends Agent {
   protected void setup() {
     Logger logger = Logger.getMyLogger(this.getName());
 
-    this.getAID().addUserDefinedSlot("signifier-1", "jade:AgentContactable");
     logger.log(Level.INFO, "[" + getLocalName() + "] Added custom signifier");
+
+    DFAgentDescription dfd = new DFAgentDescription();
+    dfd.setName(getAID());
+    dfd.addProtocols(FIPANames.InteractionProtocol.FIPA_REQUEST);
+    dfd.addProtocols(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);
+
+    try {
+        DFService.register(this, dfd);
+    } catch (FIPAException e) {
+        throw new RuntimeException(e);
+    }
 
     MessageTemplate template = MessageTemplate.and(
       MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),

@@ -76,6 +76,7 @@ public class CupProducerAgent extends Agent {
 
   private boolean performAction() {
     // Simulate action execution by generating a random number
-    return (Math.random() > 0.2);
+    // return (Math.random() > 0.2);
+    return true;
   }
 }
